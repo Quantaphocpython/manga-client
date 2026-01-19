@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MangaProject, GeneratedManga, MangaSession } from '@/lib/types';
 import { loadProject, saveProject } from '@/lib/services/storage-service';
-import { Plus, X, Layers } from 'lucide-react';
+import { Plus, X, Layers, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 
 export default function PreviewPage() {
   const router = useRouter();
@@ -94,6 +95,66 @@ export default function PreviewPage() {
     setExportPages(updatedSession.pages.filter(p => p.markedForExport));
   };
 
+  const downloadPDF = async () => {
+    if (exportPages.length === 0) return;
+
+    setLoading(true);
+    try {
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      for (let i = 0; i < exportPages.length; i++) {
+        const page = exportPages[i];
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        await new Promise((resolve, reject) => {
+          img.onload = () => {
+            try {
+              const imgWidth = 210;
+              const pageHeight = 297;
+              const imgHeight = (img.height * imgWidth) / img.width;
+              let heightLeft = imgHeight;
+              let position = 0;
+
+              if (imgHeight <= pageHeight) {
+                position = (pageHeight - imgHeight) / 2;
+                pdf.addImage(img, 'PNG', 0, position, imgWidth, imgHeight);
+              } else {
+                pdf.addImage(img, 'PNG', 0, 0, imgWidth, imgHeight);
+              }
+
+              resolve(true);
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = reject;
+          img.src = page.url || '';
+        });
+      }
+
+      const fileName = currentSession
+        ? `${currentSession.name.replace(/[^a-z0-9]/gi, '_')}.pdf`
+        : 'manga.pdf';
+
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -130,12 +191,21 @@ export default function PreviewPage() {
                 ADD FROM OTHER SESSIONS
               </button>
               <button
-                onClick={() => window.print()}
-                className="px-8 py-3 bg-amber-500 text-black rounded-xl font-manga font-bold shadow-lg hover:bg-amber-400 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={exportPages.length === 0}
-                title={exportPages.length === 0 ? 'No pages marked for export' : `Print ${exportPages.length} pages`}
+                onClick={downloadPDF}
+                className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-manga font-bold shadow-lg hover:from-green-600 hover:to-emerald-600 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={exportPages.length === 0 || loading}
+                title={exportPages.length === 0 ? 'No pages marked for export' : `Download ${exportPages.length} pages as PDF`}
               >
-                <span>DOWNLOAD PDF ({exportPages.length})</span>
+                <Download size={20} />
+                <span>{loading ? 'GENERATING...' : `DOWNLOAD PDF (${exportPages.length})`}</span>
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-6 py-3 bg-amber-500 text-black rounded-xl font-manga font-bold shadow-lg hover:bg-amber-400 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={exportPages.length === 0 || loading}
+                title="Print preview"
+              >
+                <span>PRINT</span>
               </button>
               <button
                 onClick={() => router.push('/studio')}
