@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, History, Trash2, FileText, Eye, Settings, Layers, MessageSquare, Plus, X, ChevronDown } from 'lucide-react';
+import { Sparkles, History, Trash2, FileText, Eye, Settings, Layers, MessageSquare, Plus, X, ChevronDown, Maximize2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +61,7 @@ const MangaGeneratorV2 = () => {
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showFullscreen, setShowFullscreen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [pageToDelete, setPageToDelete] = useState<string | null>(null);
@@ -88,6 +89,17 @@ const MangaGeneratorV2 = () => {
       document.body.style.overflow = '';
     };
   }, []);
+
+  // ESC key to close fullscreen
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showFullscreen) {
+        setShowFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showFullscreen]);
 
   useEffect(() => {
     const savedLeftWidth = localStorage.getItem('manga-studio-left-width');
@@ -684,10 +696,10 @@ const MangaGeneratorV2 = () => {
             )}
 
             {!currentImage && !loading && (
-              <div className="text-center space-y-4 opacity-30 max-w-md">
+              <div className="text-center space-y-6 opacity-30 max-w-2xl">
 
-                <p className="font-manga text-3xl text-zinc-600">CANVAS</p>
-                <p className="text-sm text-zinc-500" style={{ fontFamily: 'var(--font-inter)' }}>
+                <p className="font-manga text-6xl text-zinc-600">CANVAS</p>
+                <p className="text-xl text-zinc-500 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
                   Describe your story moment below to generate manga
                 </p>
               </div>
@@ -695,20 +707,22 @@ const MangaGeneratorV2 = () => {
 
             {currentImage && !loading && (
               <div className="w-full h-full flex flex-col items-center justify-center gap-6 animate-in fade-in zoom-in duration-500">
-                <div className="relative max-h-[70%] group">
-                  <img src={currentImage} className="rounded-lg shadow-2xl max-h-full object-contain" />
+                <div className="relative max-h-[85%] max-w-[90%] group">
+                  <img
+                    src={currentImage}
+                    className="rounded-xl shadow-2xl max-h-full max-w-full object-contain border border-zinc-800 cursor-pointer hover:border-amber-500 transition-all"
+                    onClick={() => setShowFullscreen(true)}
+                    title="Click to view fullscreen"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-end justify-center p-6">
                     <div className="flex gap-3">
                       <button
-                        onClick={() => {
-                          addToProject(true);
-                          router.push('/studio/preview');
-                        }}
+                        onClick={() => setShowFullscreen(true)}
                         className="px-5 py-2.5 bg-gradient-to-b from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-[0_3px_0_0_rgb(29,78,216)] hover:shadow-[0_3px_0_0_rgb(29,78,216)] active:shadow-[0_1px_0_0_rgb(29,78,216)] active:translate-y-1"
                         style={{ fontFamily: 'var(--font-inter)' }}
                       >
-                        <Eye size={14} />
-                        SAVE & PREVIEW
+                        <Maximize2 size={14} />
+                        FULLSCREEN
                       </button>
                       <button
                         onClick={() => addToProject(true)}
@@ -735,29 +749,36 @@ const MangaGeneratorV2 = () => {
             <div className="h-full flex flex-col lg:flex-row gap-4">
               {/* Context */}
               <div className="hidden md:block md:w-48 lg:w-64 space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
-                  Context / World Setting
+                <label className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <span>Context</span>
+                  <span className="text-[10px] text-amber-500 font-normal normal-case">(Keep characters consistent!)</span>
                 </label>
                 <textarea
                   value={context}
                   onChange={(e) => updateSessionContext(e.target.value)}
-                  placeholder="Characters, setting, art style..."
-                  className="w-full h-[calc(100%-28px)] bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-300 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                  placeholder="📝 Describe your characters in detail:&#10;&#10;Main character: Male, 17yo, spiky black hair, blue eyes, wearing red jacket with white shirt...&#10;&#10;Setting: Modern Tokyo, high school...&#10;&#10;💡 Tip: Be specific about appearance so AI keeps characters consistent across all images!"
+                  className="w-full h-[calc(100%-28px)] bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-base leading-relaxed text-zinc-300 placeholder:text-zinc-600 placeholder:text-xs placeholder:leading-relaxed focus:outline-none focus:border-amber-500 transition-colors resize-none"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 />
               </div>
 
               {/* Main Prompt */}
               <div className="flex-1 space-y-2">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
-                  Story Moment
+                <label className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <span>Story Moment</span>
+                  {currentSession && currentSession.pages.length > 0 && (
+                    <span className="text-[10px] text-green-500 font-normal normal-case">(Page {currentSession.pages.length + 1})</span>
+                  )}
                 </label>
                 <div className="h-[calc(100%-28px)] flex gap-3">
                   <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe the scene: A hero standing on a rooftop..."
-                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-300 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                    placeholder={currentSession && currentSession.pages.length > 0
+                      ? "Continue the story with the SAME characters from Context... Example: The hero confronts the villain in the abandoned warehouse, his blue eyes blazing with determination..."
+                      : "Describe the scene: A hero standing on a rooftop, looking at the sunset, determined expression... (Use characters from Context for consistency!)"
+                    }
+                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-base leading-relaxed text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 transition-colors resize-none"
                     style={{ fontFamily: 'var(--font-inter)' }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -781,6 +802,15 @@ const MangaGeneratorV2 = () => {
             {error && (
               <div className="mt-2 p-2 bg-red-900/20 border border-red-900/50 rounded text-red-400 text-xs text-center" style={{ fontFamily: 'var(--font-inter)' }}>
                 {error}
+              </div>
+            )}
+            {currentSession && currentSession.pages.length > 0 && !context.trim() && (
+              <div className="mt-2 p-3 bg-amber-900/20 border border-amber-500/50 rounded-lg text-amber-400 text-xs flex items-start gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                <span className="text-base">💡</span>
+                <div>
+                  <strong className="block mb-1">Tip: Add character descriptions in Context field!</strong>
+                  <span className="text-zinc-400">To keep characters consistent across all pages, describe their appearance (hair, eyes, clothes, etc.) in the Context field on the left. This helps AI remember your characters!</span>
+                </div>
               </div>
             )}
           </div>
@@ -1070,6 +1100,56 @@ const MangaGeneratorV2 = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Fullscreen Image Modal */}
+      {showFullscreen && currentImage && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setShowFullscreen(false)}
+        >
+          <button
+            onClick={() => setShowFullscreen(false)}
+            className="absolute top-4 right-4 p-3 bg-zinc-900/80 hover:bg-zinc-800 rounded-full text-white transition-all z-10 group"
+            title="Close (ESC)"
+          >
+            <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+          </button>
+
+          <div className="absolute top-4 left-4 flex gap-3 z-10">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToProject(true);
+                setShowFullscreen(false);
+              }}
+              className="px-6 py-3 bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-lg"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              ✓ ADD TO PDF
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                addToProject(true);
+                setShowFullscreen(false);
+                router.push('/studio/preview');
+              }}
+              className="px-6 py-3 bg-gradient-to-b from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-lg"
+              style={{ fontFamily: 'var(--font-inter)' }}
+            >
+              <Eye size={16} />
+              PREVIEW PDF
+            </button>
+          </div>
+
+          <img
+            src={currentImage}
+            alt="Fullscreen manga"
+            className="max-h-[95vh] max-w-[95vw] object-contain rounded-lg shadow-2xl cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

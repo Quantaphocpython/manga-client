@@ -8,7 +8,15 @@ Guidelines:
 - Use appropriate screentones for depth and atmosphere
 - Ensure characters are emotionally expressive
 - Add background details that enhance the story
-- Maintain proper perspective and anatomy`;
+- Maintain proper perspective and anatomy
+
+CRITICAL CHARACTER CONSISTENCY RULES (When continuing a story):
+- ALWAYS maintain the EXACT SAME character designs across all pages in a session
+- Keep facial features, hairstyles, hair colors, eye colors, and body proportions IDENTICAL
+- Preserve clothing, accessories, and distinctive marks consistently
+- Character personalities and expressions should evolve naturally but appearance must stay fixed
+- If a character has specific traits (scars, glasses, unique hairstyle), they MUST appear in every scene
+- Use the same art style and level of detail for recurring characters`;
 
 export const LAYOUT_PROMPTS: Record<string, string> = {
   'Single Panel': 'Create one large, impactful illustration that fills the entire page',

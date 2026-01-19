@@ -10,16 +10,32 @@ export const generateMangaImage = async (
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'AIzaSyDFbFT3W4yQ_Ad8I1CLz80otq7uJ7gf4_4' });
   
   let continuityInstructions = '';
-  if (config.context) {
-    continuityInstructions += `\nCONTEXT & WORLD SETTING:\n${config.context}\n`;
+  
+  if (config.context && config.context.trim()) {
+    continuityInstructions += `\n═══════════════════════════════════════════════════════════\n`;
+    continuityInstructions += `🌍 WORLD SETTING & CHARACTER PROFILES (MUST FOLLOW EXACTLY):\n`;
+    continuityInstructions += `═══════════════════════════════════════════════════════════\n`;
+    continuityInstructions += `${config.context}\n`;
+    continuityInstructions += `\n⚠️ CRITICAL: All characters described above MUST maintain their EXACT appearance, features, clothing, and visual traits throughout this entire session!\n`;
   }
   
   if (sessionHistory && sessionHistory.length > 0) {
-    continuityInstructions += `\nCONTINUITY REQUIREMENTS (Maintain consistency with previous pages in this session):\n`;
-    continuityInstructions += `- Character designs, appearances, and clothing must match previous pages exactly\n`;
-    continuityInstructions += `- Art style, inking technique, and visual tone must remain consistent\n`;
-    continuityInstructions += `- Setting and environment details should continue from previous pages\n`;
-    continuityInstructions += `- Previous story moments: ${sessionHistory.slice(-3).map(p => p.prompt).join(' | ')}\n`;
+    continuityInstructions += `\n═══════════════════════════════════════════════════════════\n`;
+    continuityInstructions += `📖 STORY CONTINUITY (This is page ${sessionHistory.length + 1} of an ongoing story):\n`;
+    continuityInstructions += `═══════════════════════════════════════════════════════════\n`;
+    
+    const recentPages = sessionHistory.slice(-3);
+    recentPages.forEach((page, idx) => {
+      continuityInstructions += `\nPage ${sessionHistory.length - recentPages.length + idx + 1}: "${page.prompt}"\n`;
+    });
+    
+    continuityInstructions += `\n🎯 CONSISTENCY REQUIREMENTS:\n`;
+    continuityInstructions += `✓ Characters MUST look IDENTICAL to previous pages (same face, hair, eyes, body, clothes)\n`;
+    continuityInstructions += `✓ Maintain the SAME art style, line weight, and visual aesthetic\n`;
+    continuityInstructions += `✓ Continue the same ${config.style} style and ${config.inking} inking technique\n`;
+    continuityInstructions += `✓ Keep the same level of detail and drawing quality\n`;
+    continuityInstructions += `✓ If characters wore specific outfits before, they MUST wear the same unless story requires change\n`;
+    continuityInstructions += `✓ Background and setting should match the established world\n`;
   }
   
   let dialogueInstructions = '';
@@ -38,21 +54,35 @@ export const generateMangaImage = async (
   }
   
   const enhancedPrompt = `
-    TASK: Illustrate a high-end MANGA PAGE.
-    - STORY CONTENT: ${prompt}
-    - ART STYLE: ${config.style}
-    - INKING TECHNIQUE: ${config.inking}
-    - SCREENTONE DENSITY: ${config.screentone}
-    - LAYOUT TYPE: ${config.layout} (${LAYOUT_PROMPTS[config.layout] || config.layout})
-    - COLOR MODE: ${config.useColor ? 'Full Color Anime Style' : 'Traditional Black and White Ink'}
-    ${continuityInstructions}
-    ${dialogueInstructions}
-    
-    CRITICAL LAYOUT INSTRUCTIONS:
-    - Avoid rigid grids. Use "Organic Paneling" with hand-drawn borders and varied line weights.
-    - If multi-panel, ensure all frames are contained in ONE high-resolution image.
-    - Apply the requested ${config.inking} style consistently.
-    ${config.screentone !== 'None' ? `- Emphasize ${config.screentone} for shadows and textures.` : ''}
+╔═══════════════════════════════════════════════════════════════════╗
+║                    MANGA PAGE GENERATION REQUEST                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+📝 CURRENT SCENE TO ILLUSTRATE:
+${prompt}
+
+🎨 TECHNICAL SPECIFICATIONS:
+• Art Style: ${config.style}
+• Inking Technique: ${config.inking}
+• Screentone Density: ${config.screentone}
+• Panel Layout: ${config.layout} (${LAYOUT_PROMPTS[config.layout] || config.layout})
+• Color Mode: ${config.useColor ? 'Full Color Manga/Anime Style' : 'Traditional Black and White Manga Ink'}
+
+${continuityInstructions}
+
+${dialogueInstructions}
+
+📐 COMPOSITION & LAYOUT RULES:
+✓ Create ONE cohesive manga page (not separate images)
+✓ Use organic, hand-drawn panel borders with varied line weights
+✓ Apply dynamic angles and perspectives for visual impact
+✓ Ensure all panels fit within a single high-resolution image
+✓ Use authentic manga visual language (speed lines, impact frames, etc.)
+${config.screentone !== 'None' ? `✓ Apply ${config.screentone.toLowerCase()} screentone for depth and atmosphere` : ''}
+
+${sessionHistory && sessionHistory.length > 0 ? `
+⚠️ FINAL REMINDER: This page is part of an ongoing story. Characters MUST look exactly the same as in previous pages. Check character descriptions and previous scenes carefully before drawing!
+` : ''}
   `;
 
   try {
