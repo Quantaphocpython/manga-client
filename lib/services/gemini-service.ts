@@ -9,7 +9,6 @@ export const generateMangaImage = async (
 ): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'AIzaSyDFbFT3W4yQ_Ad8I1CLz80otq7uJ7gf4_4' });
   
-  // Build context and continuity instructions
   let continuityInstructions = '';
   if (config.context) {
     continuityInstructions += `\nCONTEXT & WORLD SETTING:\n${config.context}\n`;
@@ -23,7 +22,6 @@ export const generateMangaImage = async (
     continuityInstructions += `- Previous story moments: ${sessionHistory.slice(-3).map(p => p.prompt).join(' | ')}\n`;
   }
   
-  // Dialogue instructions
   let dialogueInstructions = '';
   if (config.dialogueDensity && config.dialogueDensity !== 'No Dialogue') {
     dialogueInstructions = `\nDIALOGUE REQUIREMENTS:\n`;

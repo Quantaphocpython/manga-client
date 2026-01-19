@@ -42,7 +42,6 @@ import { generateMangaImage } from '@/lib/services/gemini-service';
 const MangaGeneratorV2 = () => {
   const router = useRouter();
 
-  // Config State
   const [prompt, setPrompt] = useState('');
   const [context, setContext] = useState('');
   const [config, setConfig] = useState<MangaConfig>({
@@ -57,7 +56,6 @@ const MangaGeneratorV2 = () => {
     context: ''
   });
 
-  // UI State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -68,13 +66,11 @@ const MangaGeneratorV2 = () => {
   const [pageToDelete, setPageToDelete] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Resizable Panel State
   const [leftWidth, setLeftWidth] = useState(320); // Pages panel
   const [rightWidth, setRightWidth] = useState(380); // Settings panel
   const [isDraggingLeft, setIsDraggingLeft] = useState(false);
   const [isDraggingRight, setIsDraggingRight] = useState(false);
 
-  // Project State
   const [project, setProject] = useState<MangaProject>({
     id: 'default',
     title: 'New Chapter',
@@ -83,7 +79,6 @@ const MangaGeneratorV2 = () => {
     currentSessionId: undefined
   });
 
-  // Session State
   const [currentSession, setCurrentSession] = useState<MangaSession | null>(null);
 
   // Set body overflow-hidden for studio page
@@ -94,7 +89,6 @@ const MangaGeneratorV2 = () => {
     };
   }, []);
 
-  // Load saved panel widths from localStorage
   useEffect(() => {
     const savedLeftWidth = localStorage.getItem('manga-studio-left-width');
     const savedRightWidth = localStorage.getItem('manga-studio-right-width');
@@ -102,7 +96,6 @@ const MangaGeneratorV2 = () => {
     if (savedRightWidth) setRightWidth(parseInt(savedRightWidth));
   }, []);
 
-  // Save panel widths to localStorage
   useEffect(() => {
     localStorage.setItem('manga-studio-left-width', leftWidth.toString());
   }, [leftWidth]);
@@ -111,7 +104,6 @@ const MangaGeneratorV2 = () => {
     localStorage.setItem('manga-studio-right-width', rightWidth.toString());
   }, [rightWidth]);
 
-  // Responsive detection
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024);
@@ -124,7 +116,6 @@ const MangaGeneratorV2 = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Drag handlers for resizable panels
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDraggingLeft) {
@@ -158,7 +149,6 @@ const MangaGeneratorV2 = () => {
     };
   }, [isDraggingLeft, isDraggingRight]);
 
-  // Load project on mount
   useEffect(() => {
     const init = async () => {
       try {
@@ -282,7 +272,6 @@ const MangaGeneratorV2 = () => {
     setPageToDelete(null);
   };
 
-  // Save project whenever it changes
   useEffect(() => {
     const save = async () => {
       try {

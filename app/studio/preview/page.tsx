@@ -15,7 +15,6 @@ export default function PreviewPage() {
   const [loading, setLoading] = useState(true);
   const [showSessionPicker, setShowSessionPicker] = useState(false);
 
-  // Ensure body can scroll on preview page
   useEffect(() => {
     document.body.style.overflow = 'auto';
     return () => {
@@ -55,7 +54,6 @@ export default function PreviewPage() {
     loadData();
   }, []);
 
-  // Reload on focus to get latest data
   useEffect(() => {
     const handleFocus = async () => {
       const saved = await loadProject('default');
