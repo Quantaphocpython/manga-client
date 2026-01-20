@@ -78,16 +78,37 @@ ${config.dialogueDensity === 'Heavy Dialogue' ? '✓ Include narration boxes for
   }
   
   let referenceImageInstructions = '';
-  if (config.referenceImages && config.referenceImages.length > 0) {
+  let hasPreviousPages = sessionHistory && sessionHistory.length > 0;
+  let hasUploadedReferences = config.referenceImages && config.referenceImages.length > 0;
+  
+  if (hasUploadedReferences || hasPreviousPages) {
     referenceImageInstructions = `
-🖼️ REFERENCE IMAGES PROVIDED (${config.referenceImages.length} image${config.referenceImages.length > 1 ? 's' : ''}):
-⚠️ STUDY THESE REFERENCE IMAGES CAREFULLY:
-• Use these images as visual references for character designs, art style, clothing, and aesthetics
-• Maintain consistency with the visual elements shown in these references
-• If characters are shown, use their exact appearance (hairstyle, face, clothing, proportions)
-• If art style examples are shown, match that style in your generation
-• These references are the PRIMARY source for visual consistency
+🖼️ VISUAL REFERENCE IMAGES PROVIDED:
 `;
+    
+    if (hasPreviousPages) {
+      const recentPagesCount = Math.min(3, sessionHistory!.length);
+      referenceImageInstructions += `
+📚 PREVIOUS MANGA PAGES (${recentPagesCount} recent pages):
+⚠️ CRITICAL - CHARACTER CONSISTENCY FROM PREVIOUS PAGES:
+• I have provided ${recentPagesCount} manga pages you JUST CREATED in this session
+• ALL characters in these previous pages MUST look EXACTLY THE SAME in this new page
+• Study their faces, hairstyles, eye shapes, body proportions, clothing, and every visual detail
+• This is a CONTINUATION of the same story - characters CANNOT look different!
+• Match the art style, line quality, and visual aesthetic from your previous work
+• If a character wore a red jacket before, they MUST still wear the red jacket (unless story requires change)
+• Facial features, hair color, eye color MUST be identical to previous pages
+`;
+    }
+    
+    if (hasUploadedReferences) {
+      referenceImageInstructions += `
+🎨 UPLOADED REFERENCE IMAGES (${config.referenceImages!.length} image${config.referenceImages!.length > 1 ? 's' : ''}):
+• Use these as additional style/character references
+• Maintain consistency with visual elements shown
+• These are supplementary references for art style and character design
+`;
+    }
   }
 
   const enhancedPrompt = `
@@ -131,7 +152,35 @@ ${sessionHistory && sessionHistory.length > 0 ? `
     // Prepare content parts with text and reference images
     const contentParts: any[] = [{ text: enhancedPrompt }];
     
-    // Add reference images if provided
+    // Add previous manga pages as visual references (last 3 pages)
+    if (sessionHistory && sessionHistory.length > 0) {
+      const recentPages = sessionHistory.slice(-3); // Get last 3 pages
+      
+      for (const page of recentPages) {
+        if (page.url) {
+          const base64Data = page.url.includes('base64,') 
+            ? page.url.split('base64,')[1] 
+            : page.url;
+          
+          let mimeType = 'image/jpeg';
+          if (page.url.includes('data:image/')) {
+            const mimeMatch = page.url.match(/data:(image\/[^;]+)/);
+            if (mimeMatch) {
+              mimeType = mimeMatch[1];
+            }
+          }
+          
+          contentParts.push({
+            inlineData: {
+              data: base64Data,
+              mimeType: mimeType
+            }
+          });
+        }
+      }
+    }
+    
+    // Add uploaded reference images if provided
     if (config.referenceImages && config.referenceImages.length > 0) {
       for (const imageData of config.referenceImages) {
         // Extract base64 data (remove data:image/...;base64, prefix if present)

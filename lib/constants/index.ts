@@ -19,12 +19,15 @@ TEXT & DIALOGUE ACCURACY (CRITICAL):
 - Never use placeholder or gibberish text - all text must be real and accurate
 
 CHARACTER CONSISTENCY RULES (When continuing a story):
-- ALWAYS maintain the EXACT SAME character designs across all pages in a session
-- Keep facial features, hairstyles, hair colors, eye colors, and body proportions IDENTICAL
-- Preserve clothing, accessories, and distinctive marks consistently
-- Character personalities and expressions should evolve naturally but appearance must stay fixed
-- If a character has specific traits (scars, glasses, unique hairstyle), they MUST appear in every scene
-- Use the same art style and level of detail for recurring characters`;
+- You will receive previous manga pages you created as VISUAL REFERENCES
+- STUDY THESE PREVIOUS PAGES CAREFULLY - they show the EXACT character designs you must maintain
+- Copy the character appearances EXACTLY: same faces, same hairstyles, same clothing, same proportions
+- Characters MUST look IDENTICAL to how you drew them in previous pages
+- This is a CONTINUATION of your own work - maintain perfect visual consistency
+- Match your previous art style, line weight, shading, and detail level
+- If you're unsure about a character detail, LOOK AT THE PREVIOUS PAGE IMAGES provided
+- Facial features, body proportions, clothing, and accessories must be EXACTLY as shown in previous pages
+- Character personalities and expressions can evolve but APPEARANCE must stay FIXED`;
 
 export const LAYOUT_PROMPTS: Record<string, string> = {
   'Single Panel': 'ONE SINGLE FULL-PAGE illustration with NO panel divisions or borders. The entire image is one continuous artwork.',
