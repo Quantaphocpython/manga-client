@@ -576,10 +576,10 @@ const MangaGeneratorV2 = () => {
             >
               <div className="p-4 border-b border-zinc-800 pb-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                     Pages
                   </h2>
-                  <span className="text-xs text-zinc-500">{pagesToShow.length} total</span>
+                  <span className="text-[10px] text-zinc-500">{pagesToShow.length} total</span>
                 </div>
 
                 {/* Session Selector */}
@@ -691,15 +691,15 @@ const MangaGeneratorV2 = () => {
                 <div className="w-64 h-80 bg-zinc-800 rounded-lg shadow-2xl relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
                 </div>
-                <div className="text-amber-500 font-manga text-2xl tracking-wider animate-pulse">GENERATING...</div>
+                <div className="text-amber-500 font-manga text-xl tracking-wider animate-pulse">GENERATING...</div>
               </div>
             )}
 
             {!currentImage && !loading && (
               <div className="text-center space-y-6 opacity-30 max-w-2xl">
 
-                <p className="font-manga text-6xl text-zinc-600">CANVAS</p>
-                <p className="text-xl text-zinc-500 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
+                <p className="font-manga text-5xl text-zinc-600">CANVAS</p>
+                <p className="text-lg text-zinc-500 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
                   Describe your story moment below to generate manga
                 </p>
               </div>
@@ -749,28 +749,28 @@ const MangaGeneratorV2 = () => {
             <div className="h-full flex flex-col lg:flex-row gap-4">
               {/* Context */}
               <div className="hidden md:block md:w-48 lg:w-64 space-y-2">
-                <label className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
                   <span>Context</span>
-                  <span className="text-[10px] text-amber-500 font-normal normal-case">(Keep characters consistent!)</span>
+                  <span className="text-[9px] text-amber-500 font-normal normal-case">(Keep characters consistent!)</span>
                 </label>
                 <textarea
                   value={context}
                   onChange={(e) => updateSessionContext(e.target.value)}
                   placeholder="📝 Describe your characters in detail:&#10;&#10;Main character: Male, 17yo, spiky black hair, blue eyes, wearing red jacket with white shirt...&#10;&#10;Setting: Modern Tokyo, high school...&#10;&#10;💡 Tip: Be specific about appearance so AI keeps characters consistent across all images!"
-                  className="w-full h-[calc(100%-28px)] bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-base leading-relaxed text-zinc-300 placeholder:text-zinc-600 placeholder:text-xs placeholder:leading-relaxed focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                  className="w-full h-[calc(100%-24px)] bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm leading-relaxed text-zinc-300 placeholder:text-zinc-600 placeholder:text-[11px] placeholder:leading-relaxed focus:outline-none focus:border-amber-500 transition-colors resize-none custom-scrollbar"
                   style={{ fontFamily: 'var(--font-inter)' }}
                 />
               </div>
 
               {/* Main Prompt */}
               <div className="flex-1 space-y-2">
-                <label className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
                   <span>Story Moment</span>
                   {currentSession && currentSession.pages.length > 0 && (
-                    <span className="text-[10px] text-green-500 font-normal normal-case">(Page {currentSession.pages.length + 1})</span>
+                    <span className="text-[9px] text-green-500 font-normal normal-case">(Page {currentSession.pages.length + 1})</span>
                   )}
                 </label>
-                <div className="h-[calc(100%-28px)] flex gap-3">
+                <div className="h-[calc(100%-24px)] flex gap-3">
                   <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
@@ -778,7 +778,7 @@ const MangaGeneratorV2 = () => {
                       ? "Continue the story with the SAME characters from Context... Example: The hero confronts the villain in the abandoned warehouse, his blue eyes blazing with determination..."
                       : "Describe the scene: A hero standing on a rooftop, looking at the sunset, determined expression... (Use characters from Context for consistency!)"
                     }
-                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-base leading-relaxed text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                    className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-sm leading-relaxed text-zinc-300 placeholder:text-zinc-600 placeholder:text-xs focus:outline-none focus:border-amber-500 transition-colors resize-none custom-scrollbar"
                     style={{ fontFamily: 'var(--font-inter)' }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -800,15 +800,15 @@ const MangaGeneratorV2 = () => {
               </div>
             </div>
             {error && (
-              <div className="mt-2 p-2 bg-red-900/20 border border-red-900/50 rounded text-red-400 text-xs text-center" style={{ fontFamily: 'var(--font-inter)' }}>
+              <div className="mt-2 p-2 bg-red-900/20 border border-red-900/50 rounded text-red-400 text-[10px] text-center" style={{ fontFamily: 'var(--font-inter)' }}>
                 {error}
               </div>
             )}
             {currentSession && currentSession.pages.length > 0 && !context.trim() && (
-              <div className="mt-2 p-3 bg-amber-900/20 border border-amber-500/50 rounded-lg text-amber-400 text-xs flex items-start gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
-                <span className="text-base">💡</span>
+              <div className="mt-2 p-2.5 bg-amber-900/20 border border-amber-500/50 rounded-lg text-amber-400 text-[10px] flex items-start gap-2" style={{ fontFamily: 'var(--font-inter)' }}>
+                <span className="text-sm">💡</span>
                 <div>
-                  <strong className="block mb-1">Tip: Add character descriptions in Context field!</strong>
+                  <strong className="block mb-0.5">Tip: Add character descriptions in Context field!</strong>
                   <span className="text-zinc-400">To keep characters consistent across all pages, describe their appearance (hair, eyes, clothes, etc.) in the Context field on the left. This helps AI remember your characters!</span>
                 </div>
               </div>
@@ -848,7 +848,7 @@ const MangaGeneratorV2 = () => {
               style={!isMobile ? { width: `${rightWidth}px`, minWidth: '300px', maxWidth: '600px' } : {}}
             >
               <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                   Generation Settings
                 </h2>
                 <button onClick={() => setShowSettings(false)} className="p-1 hover:bg-zinc-800 rounded transition-colors">
@@ -859,16 +859,16 @@ const MangaGeneratorV2 = () => {
               <div className="p-4 space-y-6">
                 {/* Style */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                     Manga Style
                   </label>
                   <Select value={config.style} onValueChange={(value) => setConfig({ ...config, style: value as MangaStyle })}>
-                    <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                    <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-950 border-zinc-800 font-sans">
                       {Object.values(MangaStyle).map(s => (
-                        <SelectItem key={s} value={s} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                        <SelectItem key={s} value={s} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                           {s}
                         </SelectItem>
                       ))}
@@ -879,16 +879,16 @@ const MangaGeneratorV2 = () => {
                 {/* Inking & Screentone */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                       Pen Style
                     </label>
                     <Select value={config.inking} onValueChange={(value) => setConfig({ ...config, inking: value as InkingStyle })}>
-                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800">
                         {Object.values(InkingStyle).map(s => (
-                          <SelectItem key={s} value={s} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                          <SelectItem key={s} value={s} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                             {s}
                           </SelectItem>
                         ))}
@@ -896,16 +896,16 @@ const MangaGeneratorV2 = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                       Screentone
                     </label>
                     <Select value={config.screentone} onValueChange={(value) => setConfig({ ...config, screentone: value as ScreentoneDensity })}>
-                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800">
                         {Object.values(ScreentoneDensity).map(s => (
-                          <SelectItem key={s} value={s} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                          <SelectItem key={s} value={s} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                             {s}
                           </SelectItem>
                         ))}
@@ -916,16 +916,16 @@ const MangaGeneratorV2 = () => {
 
                 {/* Layout */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                     Panel Layout
                   </label>
                   <Select value={config.layout} onValueChange={(value) => setConfig({ ...config, layout: value as PanelLayout })}>
-                    <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                    <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-950 border-zinc-800 font-sans">
                       {Object.values(PanelLayout).map(l => (
-                        <SelectItem key={l} value={l} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                        <SelectItem key={l} value={l} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                           {l}
                         </SelectItem>
                       ))}
@@ -936,16 +936,16 @@ const MangaGeneratorV2 = () => {
                 {/* Dialogue & Language */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                       Dialogue
                     </label>
                     <Select value={config.dialogueDensity} onValueChange={(value) => setConfig({ ...config, dialogueDensity: value as DialogueDensity })}>
-                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800">
                         {Object.values(DialogueDensity).map(d => (
-                          <SelectItem key={d} value={d} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                          <SelectItem key={d} value={d} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                             {d}
                           </SelectItem>
                         ))}
@@ -953,16 +953,16 @@ const MangaGeneratorV2 = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                       Language
                     </label>
                     <Select value={config.language} onValueChange={(value) => setConfig({ ...config, language: value as Language })}>
-                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800">
                         {Object.values(Language).map(l => (
-                          <SelectItem key={l} value={l} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                          <SelectItem key={l} value={l} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                             {l}
                           </SelectItem>
                         ))}
@@ -974,16 +974,16 @@ const MangaGeneratorV2 = () => {
                 {/* Aspect Ratio & Color */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                       Aspect Ratio
                     </label>
                     <Select value={config.aspectRatio} onValueChange={(value) => setConfig({ ...config, aspectRatio: value as AspectRatio })}>
-                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-10 text-sm">
+                      <SelectTrigger className="w-full bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-amber-500 focus:border-amber-500 h-9 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-950 border-zinc-800">
                         {Object.values(AspectRatio).map(r => (
-                          <SelectItem key={r} value={r} className="text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
+                          <SelectItem key={r} value={r} className="text-xs text-zinc-300 hover:bg-amber-500/20 focus:bg-amber-500/20 focus:text-white cursor-pointer">
                             {r}
                           </SelectItem>
                         ))}
@@ -991,7 +991,7 @@ const MangaGeneratorV2 = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider" style={{ fontFamily: 'var(--font-inter)' }}>
                       Color Mode
                     </label>
                     <button
@@ -1015,7 +1015,7 @@ const MangaGeneratorV2 = () => {
         {showChat && currentSession && currentSession.chatHistory && currentSession.chatHistory.length > 0 && (
           <div className="absolute right-2 lg:right-4 top-20 w-[calc(100vw-1rem)] sm:w-96 max-h-[600px] bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-hidden z-10">
             <div className="p-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-950">
-              <h3 className="text-sm font-bold text-zinc-400 uppercase" style={{ fontFamily: 'var(--font-inter)' }}>
+              <h3 className="text-xs font-bold text-zinc-400 uppercase" style={{ fontFamily: 'var(--font-inter)' }}>
                 Chat History
               </h3>
               <button onClick={() => setShowChat(false)} className="p-1 hover:bg-zinc-800 rounded transition-colors">
@@ -1024,11 +1024,11 @@ const MangaGeneratorV2 = () => {
             </div>
             <div className="p-4 overflow-y-auto max-h-[540px] custom-scrollbar space-y-3">
               {currentSession.chatHistory.map((msg) => (
-                <div key={msg.id} className={`p-3 rounded-lg ${msg.role === 'user' ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/50'}`}>
-                  <div className="text-[10px] font-bold text-zinc-400 mb-1" style={{ fontFamily: 'var(--font-inter)' }}>
+                <div key={msg.id} className={`p-2.5 rounded-lg ${msg.role === 'user' ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-zinc-800/50'}`}>
+                  <div className="text-[9px] font-bold text-zinc-400 mb-1" style={{ fontFamily: 'var(--font-inter)' }}>
                     {msg.role === 'user' ? 'YOU' : 'AI'}
                   </div>
-                  <div className="text-xs text-zinc-300" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <div className="text-[10px] text-zinc-300 leading-relaxed" style={{ fontFamily: 'var(--font-inter)' }}>
                     {msg.content}
                   </div>
                   {msg.imageUrl && (
