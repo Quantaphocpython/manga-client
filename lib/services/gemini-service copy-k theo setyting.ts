@@ -13,24 +13,12 @@ export const generateNextPrompt = async (
 ): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'AIzaSyCWdZeeNGdHbRGqoisSNI4_nj2hHpCQqiI' });
   
-  // Prepare previous pages info - emphasize the MOST RECENT page
+  // Prepare previous pages info
   let previousPagesInfo = '';
   const recentPages = sessionHistory.slice(-3);
-  const lastPage = sessionHistory[sessionHistory.length - 1];
-  
-  if (recentPages.length > 0) {
-    previousPagesInfo += `\n⚠️ CRITICAL - MOST RECENT PAGE (Page ${sessionHistory.length}):\n`;
-    previousPagesInfo += `"${lastPage.prompt}"\n`;
-    previousPagesInfo += `\nThis is the page you MUST continue from. Your new page (Page ${pageNumber}) should continue IMMEDIATELY after what happened in Page ${sessionHistory.length}.\n`;
-    
-    if (recentPages.length > 1) {
-      previousPagesInfo += `\n📚 ADDITIONAL CONTEXT - Recent pages for story flow:\n`;
-      recentPages.slice(0, -1).forEach((page, idx) => {
-        const pageNum = sessionHistory.length - recentPages.length + idx + 1;
-        previousPagesInfo += `\nPage ${pageNum}: ${page.prompt}\n`;
-      });
-    }
-  }
+  recentPages.forEach((page, idx) => {
+    previousPagesInfo += `\nPage ${sessionHistory.length - recentPages.length + idx + 1}: ${page.prompt}\n`;
+  });
   
   // Get layout info from config or previous pages
   const layout = config?.layout || (sessionHistory.length > 0 ? sessionHistory[sessionHistory.length - 1].config?.layout : undefined);
@@ -67,11 +55,11 @@ export const generateNextPrompt = async (
 CONTEXT:
 ${context}
 
-ORIGINAL STORY DIRECTION (for reference):
+ORIGINAL STORY DIRECTION:
 ${originalPrompt}
 
-${previousPagesInfo ? `PREVIOUS PAGES:
-${previousPagesInfo}` : ''}
+PREVIOUS PAGES:
+${previousPagesInfo}
 
 ${layout ? `📐 LAYOUT CONTEXT (for reference, but feel free to vary):
 The previous pages used "${layout}" layout with ${panelCountRequirement}.
@@ -80,27 +68,19 @@ ${layoutInfo ? `Previous layout details: ${layoutInfo}` : ''}
 
 ` : ''}CURRENT STATUS:
 - You are creating the prompt for PAGE ${pageNumber} of ${totalPages}
-- ${sessionHistory.length > 0 ? `This page MUST continue DIRECTLY from Page ${sessionHistory.length} (the most recent page)` : 'This is the first page of the story'}
+- This is a continuation of the story from the previous page(s)
 - Layout can vary between pages - focus on the story, not matching previous layout exactly
 
 YOUR TASK:
-${sessionHistory.length > 0 ? `⚠️ CRITICAL: Analyze what happened in Page ${sessionHistory.length} (the MOST RECENT page) and write a prompt for what happens NEXT.
-
-Think about:
-- What was the LAST moment or action shown in Page ${sessionHistory.length}?
-- What would logically happen IMMEDIATELY AFTER that moment?
-- How does the story progress from where Page ${sessionHistory.length} ended?
-
-Your prompt should describe the NEXT scene that continues chronologically from Page ${sessionHistory.length}.` : 'Write a prompt for the opening scene of this manga story.'}
+Analyze what happened in the previous pages and write a SHORT, CLEAR prompt (2-3 sentences) describing what should happen NEXT in the story.
 
 The prompt should:
-1. ${sessionHistory.length > 0 ? `Continue IMMEDIATELY from Page ${sessionHistory.length} - what happens next in the timeline?` : 'Start the story with an engaging opening scene'}
-2. Advance the story forward chronologically - show progression, not repetition
+1. Continue naturally from the previous scene
+2. Advance the story forward
 3. Be specific about the scene, characters, and action
 4. Maintain story pacing appropriate for page ${pageNumber}/${totalPages}
-5. ${pageNumber >= totalPages * 0.8 ? 'Build towards the climax - we are approaching the end' : 'Continue building the story naturally'}
+5. Build towards climax if approaching the end
 6. Describe a scene that can work with various panel layouts - layout variety is encouraged
-7. ${sessionHistory.length > 0 ? `DO NOT repeat what happened in Page ${sessionHistory.length} - always move forward` : ''}
 ${layout && panelCountRequirement.includes('PANEL') && !panelCountRequirement.includes('SINGLE') ? `
 7. OPTIONAL - MULTI-PANEL STORY FLOW (if using multi-panel layout):
    If the page uses multiple panels, your prompt should describe a SCENE SEQUENCE that can be broken into multiple moments:
@@ -177,27 +157,20 @@ export const generateMangaImage = async (
   let actualPrompt = prompt;
   let isBatchContinuation = false;
   
-  // CRITICAL: Always prepare context section first - must be included in ALL cases
+  // Story Settings - provided as reference/guidance, not strict requirements
   let contextSection = '';
   if (config.context && config.context.trim()) {
     contextSection = `\n═══════════════════════════════════════════════════════════\n`;
-    contextSection += `🌍 WORLD SETTING & CHARACTER PROFILES (MUST FOLLOW EXACTLY):\n`;
+    contextSection += `🌍 STORY SETTINGS & CHARACTER REFERENCE (for guidance):\n`;
     contextSection += `═══════════════════════════════════════════════════════════\n`;
     contextSection += `${config.context}\n`;
-    contextSection += `\n⚠️ CRITICAL: All characters described above MUST maintain their EXACT appearance, features, clothing, and visual traits throughout this entire session!\n`;
+    contextSection += `\n💡 NOTE: The above information is provided as REFERENCE and GUIDANCE to help maintain story consistency.\n`;
+    contextSection += `Use it as a guide, but feel free to adapt and evolve the story naturally. Focus on creating engaging scenes!\n`;
   }
   
-  // CRITICAL: If we have sessionHistory, this is ALWAYS a continuation, regardless of autoContinueStory setting
-  // This ensures proper story flow in batch generation (x10, x15, etc.)
-  const hasPreviousPages = sessionHistory && sessionHistory.length > 0;
-  
-  if (hasPreviousPages) {
+  if (config.autoContinueStory && sessionHistory && sessionHistory.length > 0) {
     // Check if this is a batch continuation (prompt contains "Continue the story naturally from page")
     isBatchContinuation = prompt.includes('Continue the story naturally from page');
-    
-    // If we have previous pages, treat this as continuation even if autoContinueStory is false
-    // This is important for batch generation where each page should continue from the previous one
-    const shouldContinue = config.autoContinueStory || isBatchContinuation || true; // Always continue if we have history
     
     if (isBatchContinuation) {
       const pageMatch = prompt.match(/page (\d+)\. This is page (\d+) of (\d+)/);
@@ -219,59 +192,44 @@ INSTRUCTIONS:
 
 Create the next scene that continues this manga story naturally.`;
       }
-    } else if (!prompt || prompt.trim() === '' || prompt === 'Continue the story naturally' || shouldContinue) {
-      // This is a continuation - enhance the prompt to emphasize continuation from the LAST page
-      const lastPageNum = sessionHistory!.length;
-      actualPrompt = `📖 STORY CONTINUATION - PAGE ${lastPageNum + 1} (Continuing from Page ${lastPageNum}):
+    } else if (!prompt || prompt.trim() === '' || prompt === 'Continue the story naturally') {
+      actualPrompt = `AUTOMATIC STORY CONTINUATION - ADVANCE THE NARRATIVE:
 
-⚠️ CRITICAL: This page (Page ${lastPageNum + 1}) MUST continue DIRECTLY from Page ${lastPageNum} (the most recent page).
+CRITICAL: This page must continue from the LAST PANEL of the previous page. 
 
-ANALYZE PAGE ${lastPageNum} (THE LAST PAGE):
-- Study Page ${lastPageNum} VERY CAREFULLY - especially the LAST PANEL
-- What was happening in the LAST PANEL of Page ${lastPageNum}?
-- What was the final moment, action, dialogue, or emotion shown?
-- Where were the characters positioned and what were they doing?
-- What was the story situation at the end of Page ${lastPageNum}?
+ANALYZE THE PREVIOUS PAGE:
+- Look at the LAST PANEL of the previous page - what was happening there?
+- What was the final moment, action, or dialogue shown?
+- Where were the characters and what were they doing?
 
-CREATE PAGE ${lastPageNum + 1} (THE NEXT PAGE):
-- Your FIRST PANEL must show what happens IMMEDIATELY AFTER the last panel of Page ${lastPageNum}
-- Continue the story chronologically - show the NEXT moment in the timeline
-- Advance the narrative forward - what happens because of what ended in Page ${lastPageNum}?
-- Build on the story momentum from Page ${lastPageNum}
-- DO NOT repeat the same scene, action, or moment from Page ${lastPageNum}
+CREATE THE NEXT SCENE:
+- Start from where the LAST PANEL ended
+- Show what happens IMMEDIATELY AFTER that moment
+- Advance the story forward chronologically
+- DO NOT repeat the same scene, action, or moment
 - DO NOT show characters in the same position doing the same thing
-- Move the story forward - show progression and development
+- Move the story forward - show the next logical progression
 
-STORY FLOW:
-Page ${lastPageNum} ended with → [Analyze what ended] → Page ${lastPageNum + 1} shows → [What happens next]
+Think: "If the previous page ended with X, then this page should show what happens because of X, or what X leads to."
 
-Think: "If Page ${lastPageNum} ended with X, then Page ${lastPageNum + 1} should show what happens because of X, or what X leads to, or the consequence of X."
-
-Create a scene that naturally follows and advances the story from Page ${lastPageNum}'s conclusion.`;
+Create a scene that naturally follows and advances the story from the previous page's conclusion.`;
     } else {
-      // User provided a specific prompt, but we still need to continue from previous page
-      const lastPageNum = sessionHistory!.length;
-      actualPrompt = `📖 STORY CONTINUATION WITH DIRECTION - PAGE ${lastPageNum + 1}:
+      actualPrompt = `STORY CONTINUATION WITH DIRECTION:
 
-This page (Page ${lastPageNum + 1}) continues from Page ${lastPageNum} (the most recent page), moving toward: "${prompt}"
+This page continues from the LAST PANEL of the previous page, moving toward: "${prompt}"
 
 CRITICAL CONTINUITY:
-- Page ${lastPageNum} ended at a specific moment - study its LAST PANEL carefully
-- Your FIRST PANEL must continue IMMEDIATELY from the last panel of Page ${lastPageNum}
+- The LAST PANEL of the previous page shows where the story ended
+- Your FIRST PANEL must continue IMMEDIATELY from that last panel
 - Then progress toward the direction: "${prompt}"
-- DO NOT skip or ignore what happened in Page ${lastPageNum}
-- DO NOT repeat scenes or actions from Page ${lastPageNum}
-- ADVANCE the story forward chronologically - show what happens next
-
-STORY FLOW:
-Page ${lastPageNum} (ended with...) → Page ${lastPageNum + 1} (continues from that, moving toward: "${prompt}")
+- DO NOT repeat scenes or actions from the previous page
+- ADVANCE the story forward - show what happens next
 
 Create a scene that:
-1. Continues from Page ${lastPageNum}'s last panel (the immediate next moment)
+1. Continues from the previous page's last panel
 2. Moves toward the direction: "${prompt}"
 3. Advances the story chronologically
-4. Shows new moments, not repeated ones
-5. Maintains story continuity from Page ${lastPageNum}`;
+4. Shows new moments, not repeated ones`;
     }
   }
   
@@ -293,42 +251,36 @@ Create a scene that:
       continuityInstructions += `\nPage ${pageNum}: ${isAutoContinued ? '(Auto-continued scene)' : `"${page.prompt}"`}\n`;
     });
     
-    // ALWAYS show continuation instructions if we have previous pages
-    // This ensures proper story flow in batch generation (x10, x15, etc.)
-    const lastPageNum = sessionHistory.length;
-    continuityInstructions += `\n🔄 STORY CONTINUATION INSTRUCTIONS (Page ${lastPageNum + 1} continuing from Page ${lastPageNum}):\n`;
-    continuityInstructions += `⚠️ CRITICAL STORY CONTINUITY - DO NOT REPEAT OR LOOP:\n`;
-    continuityInstructions += `\n📌 FOCUS ON PAGE ${lastPageNum} (THE MOST RECENT PAGE):\n`;
-    continuityInstructions += `✓ Study Page ${lastPageNum} VERY CAREFULLY - especially the LAST PANEL\n`;
-    continuityInstructions += `✓ Page ${lastPageNum} is the page you MUST continue from - this is not optional\n`;
-    continuityInstructions += `✓ The LAST PANEL of Page ${lastPageNum} shows exactly where the story ended\n`;
-    continuityInstructions += `✓ Your FIRST PANEL of Page ${lastPageNum + 1} must continue IMMEDIATELY from that last panel\n`;
-    continuityInstructions += `✓ Think: "Page ${lastPageNum} ended with X, so Page ${lastPageNum + 1} shows what happens after X"\n`;
-    continuityInstructions += `\n📖 STORY PROGRESSION REQUIREMENTS:\n`;
-    continuityInstructions += `✓ DO NOT repeat the same scene, action, or moment from Page ${lastPageNum}\n`;
-    continuityInstructions += `✓ DO NOT show characters in the same position or doing the same thing as in Page ${lastPageNum}\n`;
-    continuityInstructions += `✓ ADVANCE the story forward - show the NEXT moment in the timeline after Page ${lastPageNum}\n`;
-    continuityInstructions += `✓ If Page ${lastPageNum} ended with a character running, show them arriving, or the consequence of that action\n`;
-    continuityInstructions += `✓ If Page ${lastPageNum} ended with dialogue, show the reaction or response\n`;
-    continuityInstructions += `✓ If Page ${lastPageNum} ended with an action, show the result or next action\n`;
-    continuityInstructions += `✓ Think chronologically: Page ${lastPageNum} = moment A, Page ${lastPageNum + 1} = moment B (what happens after A?)\n`;
-    continuityInstructions += `✓ Maintain story pacing and dramatic flow appropriate for page ${lastPageNum + 1}\n`;
-    continuityInstructions += `✓ You can introduce new story elements, actions, dialogue naturally\n`;
-    continuityInstructions += `✓ Show character reactions, consequences, or next actions\n`;
-    continuityInstructions += `✓ Build on the story momentum from Page ${lastPageNum}\n`;
-    if (isBatchContinuation) {
-      continuityInstructions += `✓ This is part of a batch sequence (x10, x15, etc.) - ensure smooth progression from Page ${lastPageNum}\n`;
+    if (config.autoContinueStory || isBatchContinuation) {
+      continuityInstructions += `\n🔄 ${isBatchContinuation ? 'BATCH' : 'AUTO'}-CONTINUATION INSTRUCTIONS:\n`;
+      continuityInstructions += `⚠️ CRITICAL STORY CONTINUITY - DO NOT REPEAT OR LOOP:\n`;
+      continuityInstructions += `✓ Study the LAST page (page ${sessionHistory.length}) VERY CAREFULLY - especially the LAST PANEL\n`;
+      continuityInstructions += `✓ The LAST PANEL of the previous page shows where the story ended\n`;
+      continuityInstructions += `✓ Your FIRST PANEL must continue IMMEDIATELY from that last panel - what happens next?\n`;
+      continuityInstructions += `✓ DO NOT repeat the same scene, action, or moment from the previous page\n`;
+      continuityInstructions += `✓ DO NOT show characters in the same position or doing the same thing\n`;
+      continuityInstructions += `✓ ADVANCE the story forward - show the NEXT moment in the timeline\n`;
+      continuityInstructions += `✓ If the previous page ended with a character running, show them arriving, or the consequence of that action\n`;
+      continuityInstructions += `✓ If the previous page ended with dialogue, show the reaction or response\n`;
+      continuityInstructions += `✓ If the previous page ended with an action, show the result or next action\n`;
+      continuityInstructions += `✓ Think chronologically: Previous page = moment A, This page = moment B (what happens after A?)\n`;
+      continuityInstructions += `✓ Maintain story pacing and dramatic flow appropriate for page ${sessionHistory.length + 1}\n`;
+      continuityInstructions += `✓ You can introduce new story elements, actions, dialogue naturally\n`;
+      continuityInstructions += `✓ Show character reactions, consequences, or next actions\n`;
+      if (isBatchContinuation) {
+        continuityInstructions += `✓ This is part of a batch sequence - ensure smooth progression\n`;
+      }
+      continuityInstructions += `\n⚠️ REMEMBER: The story must MOVE FORWARD, not stay in the same place or repeat previous moments!\n`;
+      continuityInstructions += `\n`;
     }
-    continuityInstructions += `\n⚠️ REMEMBER: Page ${lastPageNum + 1} must continue from Page ${lastPageNum} - the story must MOVE FORWARD, not stay in the same place or repeat previous moments!\n`;
-    continuityInstructions += `\n`;
     
-    continuityInstructions += `\n🎯 VISUAL CONSISTENCY REQUIREMENTS:\n`;
-    continuityInstructions += `✓ Characters MUST look IDENTICAL to previous pages (same face, hair, eyes, body, clothes)\n`;
-    continuityInstructions += `✓ Maintain the SAME art style, line weight, and visual aesthetic\n`;
+    continuityInstructions += `\n🎯 VISUAL CONSISTENCY GUIDELINES:\n`;
+    continuityInstructions += `✓ Try to keep characters looking similar to previous pages (face, hair, general appearance)\n`;
+    continuityInstructions += `✓ Maintain a similar art style, line weight, and visual aesthetic\n`;
     continuityInstructions += `✓ Continue the same ${config.style} style and ${config.inking} inking technique\n`;
-    continuityInstructions += `✓ Keep the same level of detail and drawing quality\n`;
-    continuityInstructions += `✓ If characters wore specific outfits before, they MUST wear the same unless story requires change\n`;
-    continuityInstructions += `✓ Background and setting should match the established world\n`;
+    continuityInstructions += `✓ Keep a similar level of detail and drawing quality\n`;
+    continuityInstructions += `✓ Characters can evolve naturally - outfits and details can change if the story calls for it\n`;
+    continuityInstructions += `✓ Background and setting should generally match the established world, but can vary for visual interest\n`;
     
     // Layout flexibility - encourage variety for visual interest
     if (sessionHistory.length > 0) {
@@ -456,26 +408,25 @@ Remember: Text quality is CRITICAL - readers will notice spelling errors immedia
   }
   
   let referenceImageInstructions = '';
-  let hasRefPreviousPages = sessionHistory && sessionHistory.length > 0;
+  let hasPreviousPages = sessionHistory && sessionHistory.length > 0;
   let hasUploadedReferences = config.referenceImages && config.referenceImages.length > 0;
   
-  if (hasUploadedReferences || hasRefPreviousPages) {
+  if (hasUploadedReferences || hasPreviousPages) {
     referenceImageInstructions = `
 🖼️ VISUAL REFERENCE IMAGES PROVIDED:
 `;
     
-    if (hasRefPreviousPages) {
+    if (hasPreviousPages) {
       const recentPagesCount = Math.min(3, sessionHistory!.length);
       referenceImageInstructions += `
 📚 PREVIOUS MANGA PAGES (${recentPagesCount} recent pages):
-⚠️ CRITICAL - CHARACTER CONSISTENCY FROM PREVIOUS PAGES:
-• I have provided ${recentPagesCount} manga pages you JUST CREATED in this session
-• ALL characters in these previous pages MUST look EXACTLY THE SAME in this new page
-• Study their faces, hairstyles, eye shapes, body proportions, clothing, and every visual detail
-• This is a CONTINUATION of the same story - characters CANNOT look different!
+💡 REFERENCE FOR STORY CONTINUITY:
+• I have provided ${recentPagesCount} manga pages from this session for reference
+• Use these as a GUIDE to maintain general character appearance and story flow
+• Try to keep characters looking similar (faces, hairstyles, general features)
 • Match the art style, line quality, and visual aesthetic from your previous work
-• If a character wore a red jacket before, they MUST still wear the red jacket (unless story requires change)
-• Facial features, hair color, eye color MUST be identical to previous pages
+• Characters can evolve naturally - details can change if the story calls for it
+• Focus on story flow and visual interest rather than perfect visual matching
 `;
     }
     
@@ -698,9 +649,9 @@ ${config.layout.includes('Freestyle') || config.layout.includes('Asymmetric') ||
 
 ${sessionHistory && sessionHistory.length > 0 ? `
 ⚠️ FINAL REMINDER: This page is part of an ongoing story. 
-- Characters MUST look exactly the same as in previous pages. Check character descriptions and previous scenes carefully before drawing!
+- Use previous pages as reference for character appearance, but feel free to adapt naturally
 - Layout can vary between pages - use "${config.layout}" layout for this page, feel free to create visually interesting panel arrangements
-- Focus on story continuity and character consistency rather than rigid layout matching
+- Focus on story flow and visual interest rather than rigid consistency matching
 ${config.autoContinueStory ? `
 - AUTO-CONTINUE MODE: This page MUST continue from the LAST PANEL of page ${sessionHistory.length}
 - Study the LAST PANEL of the previous page - that's where the story ended
