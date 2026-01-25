@@ -276,7 +276,20 @@ ${config.storyDirection && config.storyDirection.trim() ? '• Align with the ov
 • Keep the narrative flowing smoothly between pages
 • You have full creative freedom to develop the story in an engaging way
 
-Create the next scene that continues this manga story naturally.`;
+⚠️ CRITICAL VISUAL VARIETY REQUIREMENTS:
+• AVOID repeating the same LAYOUT/COMPOSITION from previous pages
+  - Change camera angles: if previous page used close-up, use wide shot or medium shot
+  - Change composition: if previous page was centered, use rule of thirds or asymmetric
+  - Change framing: if previous page was horizontal, use vertical or diagonal
+• AVOID repeating the same POSES/GESTURES from previous pages
+  - Change character positions: standing → sitting/walking/lying
+  - Change arm positions: crossed → open/down/up
+  - Change facing direction: left → right/front/back
+  - Change body language and gestures completely
+• VARY visual presentation: different angles, compositions, poses, gestures on EVERY page
+• Each page should have a DISTINCT visual identity while maintaining story continuity
+
+Create the next scene that continues this manga story naturally with VISUALLY DISTINCT composition and poses.`;
       }
     } 
     // PRIORITY 3: Auto-continue (no user prompt, but auto-continue is enabled or we have history)
@@ -302,7 +315,17 @@ ANALYZE PAGE ${lastPageNum} (THE LAST PAGE):
 CREATE PAGE ${lastPageNum + 1} (THE NEXT PAGE):
 - Your FIRST PANEL must show what happens IMMEDIATELY AFTER the last panel of Page ${lastPageNum}
 - ⚠️ CRITICAL: Panel 1 MUST NOT duplicate or repeat the content of Page ${lastPageNum}'s last panel
-- Panel 1 must be VISUALLY DIFFERENT - use different composition, camera angle, or show a different moment
+- ⚠️ CRITICAL: Panel 1 must be VISUALLY DIFFERENT - use different composition, camera angle, or show a different moment
+- ⚠️ CRITICAL: AVOID repeating the same LAYOUT/COMPOSITION from Page ${lastPageNum}
+  * If Page ${lastPageNum} used centered composition → use rule of thirds or asymmetric composition
+  * If Page ${lastPageNum} used close-up → use medium shot or wide shot
+  * If Page ${lastPageNum} used low angle → use high angle or eye-level
+  * If Page ${lastPageNum} used horizontal layout → use vertical or diagonal layout
+- ⚠️ CRITICAL: AVOID repeating the same POSES/GESTURES from Page ${lastPageNum}
+  * If characters were standing → show them sitting, walking, or in different position
+  * If characters had arms crossed → show different arm positions
+  * If characters were facing left → show them facing right, front, or back
+  * Change body language, facial expressions, and gestures completely
 - Continue the story chronologically - show the NEXT moment in the timeline
 - Advance the narrative forward - what happens because of what ended in Page ${lastPageNum}?
 ${config.storyDirection && config.storyDirection.trim() ? '- Align with the overall story direction while maintaining natural flow' : ''}
@@ -310,7 +333,9 @@ ${config.storyDirection && config.storyDirection.trim() ? '- Align with the over
 - DO NOT repeat the same scene, action, or moment from Page ${lastPageNum}
 - DO NOT show characters in the same position doing the same thing
 - DO NOT recreate the same visual composition, pose, or scene from Page ${lastPageNum}'s panels
+- DO NOT use the same camera angle, framing, or panel layout as Page ${lastPageNum}
 - Move the story forward - show progression and development with NEW visual content
+- VARY the visual presentation: different angles, different compositions, different poses, different gestures
 
 STORY FLOW:
 Page ${lastPageNum} ended with → [Analyze what ended] → Page ${lastPageNum + 1} shows → [What happens next]
@@ -332,6 +357,14 @@ Create a scene that naturally follows and advances the story from Page ${lastPag
     continuityInstructions += `⚠️ CRITICAL: Study Page ${lastPageNum}'s LAST PANEL - Panel 1 of Page ${lastPageNum + 1} must continue IMMEDIATELY after it\n`;
     continuityInstructions += `✓ ADVANCE the story forward - show NEXT moment, NOT repeat Page ${lastPageNum}\n`;
     continuityInstructions += `✓ Panel 1 MUST be VISUALLY DIFFERENT from Page ${lastPageNum}'s last panel - different composition/angle/moment\n`;
+    continuityInstructions += `\n⚠️⚠️⚠️ AVOID REPEATING LAYOUT & POSES FROM PAGE ${lastPageNum} ⚠️⚠️⚠️\n`;
+    continuityInstructions += `✓ CHANGE composition: If Page ${lastPageNum} was centered → use rule of thirds/asymmetric\n`;
+    continuityInstructions += `✓ CHANGE camera angle: If Page ${lastPageNum} was close-up → use wide/medium shot\n`;
+    continuityInstructions += `✓ CHANGE framing: If Page ${lastPageNum} was horizontal → use vertical/diagonal\n`;
+    continuityInstructions += `✓ CHANGE poses: If characters were standing → show sitting/walking/different position\n`;
+    continuityInstructions += `✓ CHANGE gestures: Different arm positions, facing directions, body language\n`;
+    continuityInstructions += `✓ CHANGE panel layout: Vary panel sizes, positions, and arrangements\n`;
+    continuityInstructions += `✓ Each page must have DISTINCT visual identity - NO repeated compositions or poses\n`;
     continuityInstructions += `\n🎭 CHARACTER APPEARANCE CONSISTENCY (HIGHEST PRIORITY):\n`;
     continuityInstructions += `⚠️⚠️⚠️ ALL characters MUST look EXACTLY THE SAME as in previous pages ⚠️⚠️⚠️\n`;
     continuityInstructions += `✓ Before drawing ANY character, LOOK at the previous page images provided\n`;
@@ -772,6 +805,11 @@ ${isAutoContinue ? `• Panel 1: Continue from Page ${sessionHistory.length}'s L
 ✓ Each panel = logical progression from previous
 ✓ Characters COMPLETE within ONE panel - NEVER split across borders
 ✓ Use varied camera angles for visual variety
+${isAutoContinue ? `⚠️ Panel 1 MUST use DIFFERENT composition/angle/pose than Page ${sessionHistory.length}'s last panel\n` : ''}
+✓ VARY compositions: close-up → medium → wide → extreme close-up
+✓ VARY angles: low angle → eye-level → high angle → bird's eye
+✓ VARY poses: standing → sitting → walking → action pose
+✓ VARY gestures: different arm positions, facing directions, body language
 `;
   }
   return '';
@@ -791,7 +829,8 @@ ${config.layout.includes('Freestyle') || config.layout.includes('Asymmetric') ||
 ✓ Characters can appear in multiple panels, but each appearance must be a COMPLETE, FULL character
 ✓ Use different camera angles (close-up, medium, full body) to show the same character in different panels while keeping them complete
 
-${sessionHistory && sessionHistory.length > 0 ? `\n⚠️ CONTINUITY: Characters must look IDENTICAL to previous pages. ${config.autoContinueStory ? `Panel 1 continues from Page ${sessionHistory.length}'s last panel - ADVANCE forward, don't repeat.` : ''}\n` : ''}
+${sessionHistory && sessionHistory.length > 0 ? `\n⚠️ CONTINUITY: Characters must look IDENTICAL to previous pages. ${config.autoContinueStory ? `Panel 1 continues from Page ${sessionHistory.length}'s last panel - ADVANCE forward, don't repeat.` : ''}
+⚠️ VISUAL VARIETY: This page MUST use DIFFERENT composition, camera angles, and poses than Page ${sessionHistory.length}. Change layout, framing, character positions, and gestures to avoid repetition.\n` : ''}
 ${['Dynamic Freestyle', 'Asymmetric Mixed', 'Action Sequence', 'Z-Pattern Flow', 'Climax Focus', 'Conversation Layout'].includes(config.layout) ? `\n⚠️ COMPLEX LAYOUT: Verify spelling in ALL panels before finalizing - text accuracy is #1 priority!\n` : ''}
 ${config.useColor ? `\n🌈 COLOR MODE: FULL COLOR required - all elements must have colors, NO grayscale\n` : `\n⚫ COLOR MODE: Black and white only - use screentones for shading\n`}
   `;
