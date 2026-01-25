@@ -317,6 +317,13 @@ const MangaGeneratorV2 = () => {
     setPageToDelete(null);
   };
 
+  const confirmDeletePages = (pageIds: string[]) => {
+    if (pageIds.length === 0) return;
+    if (window.confirm(`Are you sure you want to delete ${pageIds.length} page(s)? This action cannot be undone.`)) {
+      removePages(pageIds);
+    }
+  };
+
   // Debounce project saving to prevent lag when typing context
   const projectSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -698,22 +705,97 @@ const MangaGeneratorV2 = () => {
   };
 
   const removePage = (id: string) => {
+    if (!id) return;
+    
     if (currentSession) {
+      // Filter out the page to delete
+      const remainingPages = currentSession.pages.filter(p => p.id !== id);
+      
+      // Create updated session - KEEP the session even if it has no pages
       const updatedSession = {
         ...currentSession,
-        pages: currentSession.pages.filter(p => p.id !== id),
+        pages: remainingPages,
         updatedAt: Date.now()
       };
+      
+      // Update current session state
       setCurrentSession(updatedSession);
-      setProject(prev => ({
-        ...prev,
-        pages: prev.pages.filter(p => p.id !== id),
-        sessions: (Array.isArray(prev.sessions) ? prev.sessions : []).map(s => s.id === currentSession.id ? updatedSession : s)
-      }));
+      
+      // Update project state - ensure session is preserved
+      setProject(prev => {
+        const sessions = Array.isArray(prev.sessions) ? prev.sessions : [];
+        const updatedSessions = sessions.map(s => 
+          s.id === currentSession.id ? updatedSession : s
+        );
+        
+        // Ensure the session still exists in the updated sessions array
+        const sessionStillExists = updatedSessions.some(s => s.id === currentSession.id);
+        if (!sessionStillExists) {
+          // If session was somehow removed, add it back
+          updatedSessions.push(updatedSession);
+        }
+        
+        return {
+          ...prev,
+          pages: prev.pages.filter(p => p.id !== id),
+          sessions: updatedSessions,
+          // Preserve currentSessionId if it matches
+          currentSessionId: prev.currentSessionId === currentSession.id ? currentSession.id : prev.currentSessionId
+        };
+      });
     } else {
+      // No current session - just remove from project pages
       setProject(prev => ({
         ...prev,
         pages: prev.pages.filter(p => p.id !== id)
+      }));
+    }
+  };
+
+  const removePages = (ids: string[]) => {
+    if (!ids || ids.length === 0) return;
+    
+    if (currentSession) {
+      // Filter out the pages to delete
+      const remainingPages = currentSession.pages.filter(p => !ids.includes(p.id));
+      
+      // Create updated session - KEEP the session even if it has no pages
+      const updatedSession = {
+        ...currentSession,
+        pages: remainingPages,
+        updatedAt: Date.now()
+      };
+      
+      // Update current session state
+      setCurrentSession(updatedSession);
+      
+      // Update project state - ensure session is preserved
+      setProject(prev => {
+        const sessions = Array.isArray(prev.sessions) ? prev.sessions : [];
+        const updatedSessions = sessions.map(s => 
+          s.id === currentSession.id ? updatedSession : s
+        );
+        
+        // Ensure the session still exists in the updated sessions array
+        const sessionStillExists = updatedSessions.some(s => s.id === currentSession.id);
+        if (!sessionStillExists) {
+          // If session was somehow removed, add it back
+          updatedSessions.push(updatedSession);
+        }
+        
+        return {
+          ...prev,
+          pages: prev.pages.filter(p => !ids.includes(p.id)),
+          sessions: updatedSessions,
+          // Preserve currentSessionId if it matches
+          currentSessionId: prev.currentSessionId === currentSession.id ? currentSession.id : prev.currentSessionId
+        };
+      });
+    } else {
+      // No current session - just remove from project pages
+      setProject(prev => ({
+        ...prev,
+        pages: prev.pages.filter(p => !ids.includes(p.id))
       }));
     }
   };
@@ -835,6 +917,7 @@ const MangaGeneratorV2 = () => {
               onToggleMarkForExport={toggleMarkForExport}
               onMovePage={movePage}
               onDeletePage={confirmDeletePage}
+              onDeletePages={confirmDeletePages}
               onOpenFullscreen={openFullscreenFromSidebar}
               leftWidth={leftWidth}
             />

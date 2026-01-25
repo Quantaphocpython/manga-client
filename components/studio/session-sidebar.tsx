@@ -1,6 +1,7 @@
 'use client'
 
-import { Layers, Trash2, Plus, FileText, Maximize2 } from 'lucide-react';
+import { useState } from 'react';
+import { Layers, Trash2, Plus, FileText, Maximize2, CheckSquare, Square } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -20,6 +21,7 @@ interface SessionSidebarProps {
     onToggleMarkForExport: (pageId: string) => void;
     onMovePage: (pageId: string, direction: 'up' | 'down') => void;
     onDeletePage: (pageId: string) => void;
+    onDeletePages: (pageIds: string[]) => void;
     onOpenFullscreen: (imageUrl: string) => void;
     leftWidth: number;
 }
@@ -34,9 +36,44 @@ export default function SessionSidebar({
     onToggleMarkForExport,
     onMovePage,
     onDeletePage,
+    onDeletePages,
     onOpenFullscreen,
     leftWidth,
 }: SessionSidebarProps) {
+    const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set());
+
+    const togglePageSelection = (pageId: string) => {
+        setSelectedPages(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(pageId)) {
+                newSet.delete(pageId);
+            } else {
+                newSet.add(pageId);
+            }
+            return newSet;
+        });
+    };
+
+    const selectAllPages = () => {
+        if (selectedPages.size === pagesToShow.length) {
+            setSelectedPages(new Set());
+        } else {
+            setSelectedPages(new Set(pagesToShow.map(p => p.id)));
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedPages.size > 0) {
+            const pageIds = Array.from(selectedPages);
+            // Only delete pages that actually exist in pagesToShow
+            const validPageIds = pageIds.filter(id => pagesToShow.some(p => p.id === id));
+            if (validPageIds.length > 0) {
+                onDeletePages(validPageIds);
+            }
+            setSelectedPages(new Set());
+        }
+    };
+
     return (
         <aside
             className="border-r border-zinc-800 bg-zinc-900 flex flex-col transition-all"
@@ -49,6 +86,33 @@ export default function SessionSidebar({
                     </h2>
                     <span className="text-[10px] text-zinc-500">{pagesToShow.length} total</span>
                 </div>
+
+                {/* Selection Controls */}
+                {pagesToShow.length > 0 && (
+                    <div className="flex items-center gap-2 mb-3">
+                        <button
+                            onClick={selectAllPages}
+                            className="flex items-center gap-1.5 px-2 py-1 text-[10px] text-zinc-400 hover:text-amber-500 transition-colors"
+                            title={selectedPages.size === pagesToShow.length ? "Deselect All" : "Select All"}
+                        >
+                            {selectedPages.size === pagesToShow.length ? (
+                                <CheckSquare size={14} />
+                            ) : (
+                                <Square size={14} />
+                            )}
+                            <span>{selectedPages.size === pagesToShow.length ? 'Deselect All' : 'Select All'}</span>
+                        </button>
+                        {selectedPages.size > 0 && (
+                            <button
+                                onClick={handleDeleteSelected}
+                                className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-b from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white rounded text-[10px] font-bold transition-all shadow-[0_2px_0_0_rgb(153,27,27)] hover:shadow-[0_2px_0_0_rgb(153,27,27)] active:shadow-[0_0.5px_0_0_rgb(153,27,27)] active:translate-y-0.5"
+                            >
+                                <Trash2 size={12} />
+                                Delete ({selectedPages.size})
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {/* Session Selector */}
                 {currentSession ? (
@@ -106,11 +170,42 @@ export default function SessionSidebar({
                         <p className="text-xs text-zinc-500">No pages yet</p>
                     </div>
                 ) : (
-                    pagesToShow.map((page, idx) => (
-                        <div key={page.id} className="group relative bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden hover:border-amber-500/30 transition-all">
+                    pagesToShow.map((page, idx) => {
+                        const isSelected = selectedPages.has(page.id);
+                        return (
+                        <div 
+                            key={page.id} 
+                            className={`group relative bg-zinc-950 border rounded-lg overflow-hidden transition-all cursor-pointer ${
+                                isSelected 
+                                    ? 'border-amber-500 ring-2 ring-amber-500/50' 
+                                    : 'border-zinc-800 hover:border-amber-500/30'
+                            }`}
+                            onClick={(e) => {
+                                // Only toggle selection if clicking on the card itself, not buttons
+                                if ((e.target as HTMLElement).closest('button') === null) {
+                                    togglePageSelection(page.id);
+                                }
+                            }}
+                        >
                             <img src={page.url || "/placeholder.svg"} className="w-full h-40 object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                            <div className="absolute top-2 left-2 px-2 py-1 bg-black/80 backdrop-blur-sm rounded text-[10px] font-bold text-amber-500">
-                                P.{idx + 1}
+                            <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        togglePageSelection(page.id);
+                                    }}
+                                    className="p-1 bg-black/80 backdrop-blur-sm rounded hover:bg-black/90 transition-colors"
+                                    title={isSelected ? "Deselect" : "Select"}
+                                >
+                                    {isSelected ? (
+                                        <CheckSquare size={14} className="text-amber-500" />
+                                    ) : (
+                                        <Square size={14} className="text-zinc-400" />
+                                    )}
+                                </button>
+                                <div className="px-2 py-1 bg-black/80 backdrop-blur-sm rounded text-[10px] font-bold text-amber-500">
+                                    P.{idx + 1}
+                                </div>
                             </div>
                             {page.markedForExport && (
                                 <div className="absolute top-2 right-2 px-2 py-1 bg-green-500/90 backdrop-blur-sm rounded text-[10px] font-bold text-white">
@@ -141,7 +236,8 @@ export default function SessionSidebar({
                                 </div>
                             </div>
                         </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
         </aside>

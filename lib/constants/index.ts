@@ -32,30 +32,67 @@ COLOR MODE REQUIREMENTS:
 - All elements must be colored: skin tones, hair, clothing, backgrounds, everything
 - If BLACK AND WHITE mode is specified: Use only black ink, white space, and grayscale screentones - NO colors
 
-TEXT & DIALOGUE ACCURACY (CRITICAL - HIGHEST PRIORITY):
-- ALL text and dialogue MUST be spelled correctly in the specified language - NO EXCEPTIONS
-- Before rendering ANY text, verify EVERY word is correct - read each word carefully
-- Use proper grammar, punctuation, and natural phrasing
-- Text must be CRYSTAL CLEAR, SHARP, and highly legible - no blurry or fuzzy text
-- Text must have strong contrast (dark text on light background) and appropriate size
-- Speech bubbles should be well-positioned and not cover important artwork
-- For non-English languages, use proper scripts and characters (Japanese: kanji/hiragana/katakana, Vietnamese: diacritics, etc.)
-- For Vietnamese: EVERY diacritic (dấu) must be present and correct - missing diacritics = WRONG spelling
-- For Japanese/Chinese: Every character must be the correct one, not similar-looking wrong characters
-- For Korean: Every Hangul syllable block must be correctly formed
-- Never use placeholder or gibberish text - all text must be real and accurate
-- Double-check, triple-check all text before rendering - text accuracy is NON-NEGOTIABLE
+TEXT & DIALOGUE ACCURACY (CRITICAL - HIGHEST PRIORITY - #1 CONCERN):
+⚠️⚠️⚠️ TEXT ACCURACY IS THE MOST IMPORTANT REQUIREMENT - ZERO TOLERANCE FOR ERRORS ⚠️⚠️⚠️
 
-CHARACTER CONSISTENCY RULES (When continuing a story):
+- ALL text and dialogue MUST be spelled correctly in the specified language - NO EXCEPTIONS, NO TYPOS, NO ERRORS
+- Before rendering ANY text, you MUST verify EVERY word character-by-character - read each word carefully and spell it out mentally
+- Use proper grammar, punctuation, and natural phrasing - verify sentence structure is correct
+- Text must be CRYSTAL CLEAR, SHARP, and highly legible - no blurry, fuzzy, distorted, or unreadable text
+- Text must have STRONG contrast (dark text #000000 on light background #FFFFFF) and appropriate size (minimum readable)
+- Speech bubbles should be well-positioned with proper padding and not cover important artwork
+- For non-English languages, use proper scripts and characters (Japanese: kanji/hiragana/katakana, Vietnamese: diacritics, etc.)
+- For Vietnamese: EVERY diacritic (dấu) must be present and correct - missing diacritics = WRONG spelling (this is CRITICAL)
+- For Vietnamese: Common mistakes to avoid: "rồi" (NOT "rò"), "tất cả" (NOT "tế cã"), "thành công" (NOT "thánh cộnc"), "vô dụng" (NOT "đô vộ dượng"), "bẩn" (NOT "bẫn"), "đ" (NOT "d")
+- For Vietnamese: Verify "đ" vs "d" - they are DIFFERENT letters and cannot be interchanged
+- For Japanese/Chinese: Every character must be the CORRECT one, not similar-looking wrong characters (e.g., 人 vs 入, 日 vs 曰)
+- For Korean: Every Hangul syllable block must be correctly formed with proper spacing between words
+- For English: Common words must be correct - "the" (NOT "teh"), "and" (NOT "adn"), "you" (NOT "yu"), "are" (NOT "aer")
+- Never use placeholder, gibberish, or nonsense text - all text must be real, accurate, and meaningful
+- Double-check, triple-check, and verify ALL text character-by-character before rendering - text accuracy is NON-NEGOTIABLE
+- If you're unsure about ANY word's spelling, use a simpler word you're 100% certain is correct
+- ONE typo can ruin the entire page - take your time to verify spelling, it's more important than speed
+- Text accuracy is MORE IMPORTANT than artistic style - perfect spelling comes FIRST, always
+
+CHARACTER CONSISTENCY RULES (When continuing a story - HIGHEST PRIORITY):
+⚠️⚠️⚠️ CHARACTER APPEARANCE CONSISTENCY IS MANDATORY - ZERO TOLERANCE FOR CHANGES ⚠️⚠️⚠️
+
 - You will receive previous manga pages you created as VISUAL REFERENCES
 - STUDY THESE PREVIOUS PAGES CAREFULLY - they show the EXACT character designs you must maintain
-- Copy the character appearances EXACTLY: same faces, same hairstyles, same clothing, same proportions
+- BEFORE drawing ANY character, you MUST:
+  1. Look at the previous page images provided
+  2. Identify the character in those images
+  3. Study their EXACT appearance in detail
+  4. Copy their appearance EXACTLY - pixel-perfect consistency required
+
+- CHARACTER APPEARANCE CHECKLIST (Verify for EVERY character):
+  ✓ Face shape and structure - must match exactly
+  ✓ Eye shape, size, and color - must match exactly
+  ✓ Hair style, color, length, and texture - must match exactly
+  ✓ Body proportions, height, and build - must match exactly
+  ✓ Clothing, outfit, colors, and accessories - must match exactly (unless story requires change)
+  ✓ Skin tone and color - must match exactly
+  ✓ Distinguishing features (scars, tattoos, jewelry, glasses) - must match exactly
+  ✓ Overall character design - must be IDENTICAL
+
 - Characters MUST look IDENTICAL to how you drew them in previous pages
 - This is a CONTINUATION of your own work - maintain perfect visual consistency
 - Match your previous art style, line weight, shading, and detail level
 - If you're unsure about a character detail, LOOK AT THE PREVIOUS PAGE IMAGES provided
 - Facial features, body proportions, clothing, and accessories must be EXACTLY as shown in previous pages
-- Character personalities and expressions can evolve but APPEARANCE must stay FIXED`;
+- Character personalities and expressions can evolve but APPEARANCE must stay FIXED
+
+- ABSOLUTELY FORBIDDEN:
+  ✗ Changing character's face shape, eye color, or hair style/color
+  ✗ Changing body proportions or build
+  ✗ Changing clothing unless story explicitly requires it
+  ✗ Changing skin tone
+  ✗ Making characters look "similar but different" - they must be IDENTICAL
+
+- REQUIRED:
+  ✓ Characters must be VISUALLY IDENTICAL to previous pages
+  ✓ Every visual detail must match exactly
+  ✓ Perfect consistency is NON-NEGOTIABLE`;
 
 export const LAYOUT_PROMPTS: Record<string, string> = {
   'Single Panel': 'ONE SINGLE FULL-PAGE illustration with NO panel divisions or borders. The entire image is one continuous artwork.',
