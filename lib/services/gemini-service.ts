@@ -236,15 +236,24 @@ All characters described above MUST maintain their EXACT appearance throughout t
   // This ensures proper story flow in batch generation (x10, x15, etc.)
   const hasPreviousPages = sessionHistory && sessionHistory.length > 0;
   
+  // CRITICAL: Check if user provided a specific prompt FIRST
+  // User prompt takes absolute priority - if user typed something, use it
+  const isUserProvidedPrompt = prompt && prompt.trim() && 
+    !prompt.includes('Continue the story naturally from page') && 
+    prompt !== 'Continue the story naturally';
+  
   if (hasPreviousPages) {
     // Check if this is a batch continuation (prompt contains "Continue the story naturally from page")
     isBatchContinuation = prompt.includes('Continue the story naturally from page');
     
-    // If we have previous pages, treat this as continuation even if autoContinueStory is false
-    // This is important for batch generation where each page should continue from the previous one
-    const shouldContinue = config.autoContinueStory || isBatchContinuation || true; // Always continue if we have history
-    
-    if (isBatchContinuation) {
+    // PRIORITY 1: If user provided a specific prompt, use it directly (highest priority)
+    if (isUserProvidedPrompt && !isBatchContinuation) {
+      // User provided a specific prompt - use it as-is, it's the PRIMARY instruction
+      actualPrompt = prompt;
+      // Note: We keep actualPrompt as the user's prompt - it will be shown with highest priority in enhancedPrompt
+    } 
+    // PRIORITY 2: Batch continuation (auto-generated)
+    else if (isBatchContinuation) {
       const pageMatch = prompt.match(/page (\d+)\. This is page (\d+) of (\d+)/);
       if (pageMatch) {
         const currentPage = parseInt(pageMatch[2]);
@@ -269,7 +278,9 @@ ${config.storyDirection && config.storyDirection.trim() ? '• Align with the ov
 
 Create the next scene that continues this manga story naturally.`;
       }
-    } else if (!prompt || prompt.trim() === '' || prompt === 'Continue the story naturally' || shouldContinue) {
+    } 
+    // PRIORITY 3: Auto-continue (no user prompt, but auto-continue is enabled or we have history)
+    else if (!prompt || prompt.trim() === '' || prompt === 'Continue the story naturally' || config.autoContinueStory) {
       // This is a continuation - enhance the prompt to emphasize continuation from the LAST page
       const lastPageNum = sessionHistory!.length;
       const storyDirectionNote = config.storyDirection && config.storyDirection.trim() 
@@ -307,39 +318,6 @@ Page ${lastPageNum} ended with → [Analyze what ended] → Page ${lastPageNum +
 Think: "If Page ${lastPageNum} ended with X, then Page ${lastPageNum + 1} should show what happens because of X, or what X leads to, or the consequence of X."
 
 Create a scene that naturally follows and advances the story from Page ${lastPageNum}'s conclusion.`;
-    } else {
-      // User provided a specific prompt, but we still need to continue from previous page
-      const lastPageNum = sessionHistory!.length;
-      const storyDirectionNote = config.storyDirection && config.storyDirection.trim() 
-        ? `\n📖 STORY DIRECTION CONTEXT: Keep the overall story direction in mind: "${config.storyDirection.substring(0, 200)}${config.storyDirection.length > 200 ? '...' : ''}"\n`
-        : '';
-      
-      actualPrompt = `📖 STORY CONTINUATION WITH DIRECTION - PAGE ${lastPageNum + 1}:
-
-This page (Page ${lastPageNum + 1}) continues from Page ${lastPageNum} (the most recent page), moving toward: "${prompt}"
-${storyDirectionNote}
-
-CRITICAL CONTINUITY:
-- Page ${lastPageNum} ended at a specific moment - study its LAST PANEL carefully
-- Your FIRST PANEL must continue IMMEDIATELY from the last panel of Page ${lastPageNum}
-- ⚠️ CRITICAL: Panel 1 MUST NOT duplicate or repeat the visual content of Page ${lastPageNum}'s last panel
-- Panel 1 must be VISUALLY DISTINCT - different composition, angle, or moment
-- Then progress toward the direction: "${prompt}"
-${config.storyDirection && config.storyDirection.trim() ? '- Align with the overall story direction provided' : ''}
-- DO NOT skip or ignore what happened in Page ${lastPageNum}
-- DO NOT repeat scenes or actions from Page ${lastPageNum}
-- DO NOT recreate the same visual composition, pose, or scene from Page ${lastPageNum}'s panels
-- ADVANCE the story forward chronologically - show what happens next with NEW visual content
-
-STORY FLOW:
-Page ${lastPageNum} (ended with...) → Page ${lastPageNum + 1} (continues from that, moving toward: "${prompt}")
-
-Create a scene that:
-1. Continues from Page ${lastPageNum}'s last panel (the immediate next moment)
-2. Moves toward the direction: "${prompt}"
-${config.storyDirection && config.storyDirection.trim() ? '3. Aligns with the overall story direction' : '3. Advances the story chronologically'}
-4. Shows new moments, not repeated ones
-5. Maintains story continuity from Page ${lastPageNum}`;
     }
   }
   
@@ -652,11 +630,8 @@ These are pages you JUST CREATED in this session. You MUST study them carefully 
   };
 
   // Determine if user provided a specific prompt (not auto-continue)
-  // User prompt is considered if it exists and is not an auto-generated continuation prompt
-  const hasUserPrompt = prompt && prompt.trim() && 
-    !prompt.includes('Continue the story naturally from page') && 
-    prompt !== 'Continue the story naturally' &&
-    !isBatchContinuation;
+  // This should match the same logic used above
+  const hasUserPrompt = isUserProvidedPrompt && !isBatchContinuation;
 
   const enhancedPrompt = `
 ╔═══════════════════════════════════════════════════════════════════╗
