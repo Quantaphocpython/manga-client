@@ -3,7 +3,7 @@ import { authStore } from './auth-client';
 authStore.loadFromStorage();
 
 const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend-manga-generator.onrender.com/';
+  process.env.NEXT_PUBLIC_BACKEND_URL || 'https://backend-manga-generator.onrender.com';
 
 function resolveBackendUrl(input: RequestInfo): RequestInfo {
   if (typeof input === 'string' && input.startsWith('/api/')) {
