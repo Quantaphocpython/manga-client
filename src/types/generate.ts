@@ -1,52 +1,42 @@
-export interface GenerateConfig {
-  style: 'anime' | 'realistic' | 'cartoon' | 'manga' | 'webcomic';
-  genre: string;
-  colorScheme: 'color' | 'blackwhite' | 'sepia';
-  resolution: 'low' | 'medium' | 'high' | 'ultra';
-  aspectRatio: '16:9' | '4:3' | '1:1' | 'custom';
-  quality?: number;
-  seed?: number;
-  model?: string;
-}
+import { GeneratedManga, MangaConfig } from '@/types';
 
-export interface SessionHistory {
-  id: string;
-  imageUrl: string;
-  prompt: string;
-  pageNumber?: number;
-}
+export type GenerateConfig = MangaConfig;
 
+/**
+ * Request for a single manga page generation.
+ */
 export interface GenerateRequest {
   prompt: string;
   config: GenerateConfig;
-  sessionHistory?: SessionHistory[];
+  sessionHistory?: GeneratedManga[];
   isAutoContinue?: boolean;
   projectId?: string;
 }
 
-export interface GenerateResponse {
-  id: string;
-  page: {
-    id: string;
-    pageNumber: number;
-    panels: Array<{
-      id: string;
-      position: number;
-      prompt: string;
-      imageUrl: string;
-      thumbnailUrl?: string;
-    }>;
-  };
-  prompt: string;
-  imageUrl: string;
-  processingTime?: number;
-  metadata?: {
-    model: string;
-    cost?: number;
-    parameters: GenerateConfig;
-  };
+/**
+ * Standard API response wrapper for generation.
+ */
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+  details?: string;
 }
 
+/**
+ * Data returned from a single page generation.
+ */
+export interface GenerateResponseData {
+  page: GeneratedManga;
+  prompt: string;
+  imageUrl: string;
+}
+
+export type GenerateResponse = ApiResponse<GenerateResponseData>;
+
+/**
+ * Request for batch manga generation.
+ */
 export interface BatchGenerateRequest {
   prompts: string[];
   config: GenerateConfig;
@@ -54,17 +44,27 @@ export interface BatchGenerateRequest {
   batchSize?: number;
 }
 
+/**
+ * Status and results of a batch job.
+ */
 export interface BatchGenerateResponse {
-  batchId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  results: GenerateResponse[];
-  progress: {
+  pages: GeneratedManga[];
+  totalGenerated: number;
+  totalRequested: number;
+  batchId?: string;
+  status?: 'pending' | 'processing' | 'completed' | 'failed';
+  progress?: {
     completed: number;
     total: number;
     failed: number;
   };
 }
 
+export type BatchGenerateResult = ApiResponse<BatchGenerateResponse>;
+
+/**
+ * History record for past generations.
+ */
 export interface GenerationHistory {
   id: string;
   type: 'single' | 'batch';

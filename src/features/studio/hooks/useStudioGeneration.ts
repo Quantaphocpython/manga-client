@@ -1,10 +1,5 @@
-import { geminiService } from '@/services/gemini.service';
-import {
-  GeneratedManga,
-  MangaConfig,
-  MangaProject,
-  MangaSession,
-} from '@/types';
+import { generateService } from '@/services/generate.service';
+import { MangaConfig, MangaProject, MangaSession } from '@/types';
 import { extractErrorMessage } from '@/utils/error-handler';
 import { cleanUserPrompt } from '@/utils/prompt-utils';
 import { generateId } from '@/utils/react-utils';
@@ -112,12 +107,18 @@ export function useStudioGeneration({
     startProgress();
 
     try {
-      const imageUrl = await geminiService.generateMangaImage(
-        finalPrompt,
-        { ...config, context: context || config.context },
-        currentSession.pages || [],
-        currentSession.selectedReferencePageIds || [],
-      );
+      // Use generateService instead of direct geminiService
+      const response = await generateService.generateSingle({
+        prompt: finalPrompt,
+        config: { ...config, context: context || config.context },
+        sessionHistory: currentSession.pages || [],
+      });
+
+      if (!response.data) {
+        throw new Error('No data returned from generation');
+      }
+
+      const { page: generatedPage, imageUrl } = response.data;
 
       setGenerationProgress(100);
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -132,11 +133,13 @@ export function useStudioGeneration({
         config: { ...config, context: context || config.context },
       };
 
-      const finalSession = {
+      const finalSession: MangaSession = {
         ...sessionWithUserMessage,
         chatHistory: [...sessionWithUserMessage.chatHistory, assistantMessage],
+        pages: [...(currentSession.pages || []), generatedPage], // Add the generated page to session
         updatedAt: Date.now(),
       };
+
       setCurrentSession(finalSession);
       setProject((prev) => ({
         ...prev,
@@ -192,34 +195,28 @@ export function useStudioGeneration({
           };
           const sessionHistory = localSession.pages || [];
 
+          // For first page use provided prompt (or auto if empty/derived)
+          // For subsequent pages, let server generate prompt by passing empty prompt
+          const pagePrompt = i === 0 ? prompt : '';
+
           if (i > 0) {
-            const actualPageNumber = sessionHistory.length + 1;
             setBatchProgress({ current: i, total: totalPages });
-            currentPrompt = await geminiService.generateNextPrompt(
-              sessionHistory,
-              context || config.context || '',
-              prompt,
-              actualPageNumber,
-              totalPages,
-              configWithContext,
-            );
           }
 
-          let imageUrl = await geminiService.generateMangaImage(
-            currentPrompt,
-            configWithContext,
-            sessionHistory,
-            currentSession.selectedReferencePageIds,
-          );
-
-          const newPage: GeneratedManga = {
-            id: generateId(),
-            url: imageUrl,
-            prompt: currentPrompt,
-            timestamp: Date.now(),
+          const response = await generateService.generateSingle({
+            prompt: pagePrompt,
             config: configWithContext,
-            markedForExport: true,
-          };
+            sessionHistory: sessionHistory,
+            isAutoContinue: i > 0 || !prompt?.trim(), // Force auto-continue for subsequent pages
+          });
+
+          if (!response.data || !response.data.page) {
+            throw new Error('No page returned from generation');
+          }
+
+          const newPage = response.data.page;
+          // Ensure marked for export
+          newPage.markedForExport = true;
 
           localSession = {
             ...localSession,

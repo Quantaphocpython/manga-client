@@ -251,19 +251,22 @@ export const HolographicCard: React.FC<HolographicCardProps> = ({
               className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
               style={{ opacity: imageOpacity }}
             >
-              <Image
-                src={imageSrc}
-                alt=""
-                draggable={false}
-                fill
-                className="object-cover"
+              <div
+                className="relative h-full"
                 style={{
                   width: `${maxImageWidthPct * 100}%`,
-                  height: 'auto',
-                  maxHeight: '100%',
                 }}
-                sizes={`(max-width: 768px) 100vw, ${width}px`}
-              />
+              >
+                <Image
+                  src={imageSrc}
+                  alt=""
+                  draggable={false}
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes={`(max-width: 768px) 100vw, ${width}px`}
+                />
+              </div>
             </div>
 
             {/* Background Image 2 (Hover Reveal) */}
@@ -275,19 +278,21 @@ export const HolographicCard: React.FC<HolographicCardProps> = ({
                   transition: `opacity ${hoverImageEase} ease`,
                 }}
               >
-                <Image
-                  src={hoverImageSrc}
-                  alt=""
-                  draggable={false}
-                  fill
-                  className="object-cover"
+                <div
+                  className="relative h-full"
                   style={{
                     width: `${maxImageWidthPct * 100}%`,
-                    height: 'auto',
-                    maxHeight: '100%',
                   }}
-                  sizes={`(max-width: 768px) 100vw, ${width}px`}
-                />
+                >
+                  <Image
+                    src={hoverImageSrc}
+                    alt=""
+                    draggable={false}
+                    fill
+                    className="object-cover"
+                    sizes={`(max-width: 768px) 100vw, ${width}px`}
+                  />
+                </div>
               </div>
             )}
 

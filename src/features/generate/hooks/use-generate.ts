@@ -1,10 +1,10 @@
 import { generateService } from '@/services/generate.service';
+import { GeneratedManga } from '@/types';
 import {
   BatchGenerateRequest,
   DialogueBubble,
   GenerateConfig,
   GenerateRequest,
-  SessionHistory,
 } from '@/types/generate';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -95,7 +95,7 @@ export function useGenerateClean() {
     mutationFn: (request: {
       prompt?: string;
       config: GenerateConfig;
-      sessionHistory?: SessionHistory[];
+      sessionHistory?: GeneratedManga[];
       totalPages?: number;
     }) => generateService.generateClean(request),
   });

@@ -1,4 +1,5 @@
 import { FlatCompat } from '@eslint/eslintrc';
+import typescriptEslintPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptEslintParser from '@typescript-eslint/parser';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -23,8 +24,11 @@ const eslintConfig = [
         project: './tsconfig.json',
       },
     },
+    plugins: {
+      '@typescript-eslint': typescriptEslintPlugin,
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'off',
       'react-hooks/exhaustive-deps': 'off',
       'react/no-unescaped-entities': 'off',

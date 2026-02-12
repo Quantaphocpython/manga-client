@@ -1,5 +1,6 @@
 import { ApiEndpoints } from '@/constants/server';
 import { AppApiClient } from '@/services/app-api-client';
+import { GeneratedManga } from '@/types';
 import {
   BatchGenerateRequest,
   BatchGenerateResponse,
@@ -9,7 +10,6 @@ import {
   GenerateRequest,
   GenerateResponse,
   GenerationHistory,
-  SessionHistory,
 } from '@/types/generate';
 import { formatUrl } from '@/utils/api-formatter';
 
@@ -71,10 +71,10 @@ class GenerateService extends AppApiClient {
   async generateClean(request: {
     prompt?: string;
     config: GenerateConfig;
-    sessionHistory?: SessionHistory[];
+    sessionHistory?: GeneratedManga[];
     totalPages?: number;
   }): Promise<{
-    pages: GenerateResponse['page'][];
+    pages: GeneratedManga[];
     totalGenerated: number;
     isClean: boolean;
   }> {

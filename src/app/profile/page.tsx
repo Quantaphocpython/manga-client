@@ -489,7 +489,7 @@ function ProfileContent() {
                     <span className="text-xs text-zinc-300">Email</span>
                     <Switch
                       checked={preferences.notifications.email}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setPreferences({
                           ...preferences,
                           notifications: {
@@ -504,7 +504,7 @@ function ProfileContent() {
                     <span className="text-xs text-zinc-300">Push</span>
                     <Switch
                       checked={preferences.notifications.push}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setPreferences({
                           ...preferences,
                           notifications: {
@@ -519,7 +519,7 @@ function ProfileContent() {
                     <span className="text-xs text-zinc-300">Bình luận</span>
                     <Switch
                       checked={preferences.notifications.comments}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setPreferences({
                           ...preferences,
                           notifications: {
@@ -534,7 +534,7 @@ function ProfileContent() {
                     <span className="text-xs text-zinc-300">Likes</span>
                     <Switch
                       checked={preferences.notifications.likes}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setPreferences({
                           ...preferences,
                           notifications: {
@@ -676,7 +676,7 @@ function ProfileContent() {
                         <Switch
                           checked={!!project.isPublic}
                           disabled={savingProjectId === project.id}
-                          onCheckedChange={(val) =>
+                          onCheckedChange={(val: boolean) =>
                             handleTogglePublic(project, val)
                           }
                         />
