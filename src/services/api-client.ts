@@ -1,4 +1,4 @@
-import { BACKEND_BASE_URL } from '@/constants/api';
+import { BACKEND_BASE_URL } from '@/constants/server';
 import { authEventBus } from '@/lib/auth-events';
 import axios, {
   AxiosInstance,

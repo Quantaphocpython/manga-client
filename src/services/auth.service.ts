@@ -1,4 +1,4 @@
-import { ApiEndpoints } from '@/constants/api';
+import { ApiEndpoints } from '@/constants/server';
 import { AuthResponse, User } from '@/hooks/use-auth';
 import { AppApiClient } from '@/services/app-api-client';
 
