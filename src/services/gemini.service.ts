@@ -1,4 +1,8 @@
-import { LAYOUT_PROMPTS, MANGA_SYSTEM_INSTRUCTION } from '@/constants';
+import {
+  GEMINI_API_KEY,
+  LAYOUT_PROMPTS,
+  MANGA_SYSTEM_INSTRUCTION,
+} from '@/constants';
 import {
   IMAGE_GENERATION_MODEL,
   INKING_GUIDES,
@@ -31,7 +35,7 @@ export class GeminiService {
 
   constructor() {
     this.genAI = new GoogleGenAI({
-      apiKey: process.env.API_KEY || 'AIzaSyCWdZeeNGdHbRGqoisSNI4_nj2hHpCQqiI',
+      apiKey: GEMINI_API_KEY,
     });
   }
 

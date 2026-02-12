@@ -1,4 +1,4 @@
-import { ApiEndpoints } from '@/constants/api';
+import { ApiEndpoints } from '@/constants/server';
 import { AppApiClient } from '@/services/app-api-client';
 import { Project } from '@/types/projects';
 import { formatUrl } from '@/utils/api-formatter';
