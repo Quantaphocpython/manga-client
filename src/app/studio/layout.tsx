@@ -1,6 +1,6 @@
 'use client';
 
-import { AppContainer } from '@/components/app/container';
+import { AppContainer } from '@/features/app-shell';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';

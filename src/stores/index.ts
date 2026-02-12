@@ -1,9 +1,21 @@
-// Export all stores for easy importing
-export { useAuthStore } from './auth.store';
-export { useProjectsStore } from './projects.store';
+// Imports for local usage
+import { useAuthStore } from './auth.store';
+import { useGenerationStore } from './generation.store';
+import { useProjectsStore } from './projects.store';
+import { useUIStore } from './ui.store';
+
+// Re-exports
+export { authStore, useAuthStore } from './auth.store';
+export {
+  createDialogueElement,
+  createImageElement,
+  createPanelElement,
+  createTextElement,
+  useCanvasStore,
+} from './canvas-store';
 export { useGenerationStore } from './generation.store';
-export { useUIStore, useIsLoading } from './ui.store';
-export { useCanvasStore, createPanelElement, createImageElement, createTextElement, createDialogueElement } from './canvas-store';
+export { useProjectsStore } from './projects.store';
+export { useIsLoading, useUIStore } from './ui.store';
 
 // Store types
 export type { LoadingKeys } from './ui.store';
@@ -25,12 +37,12 @@ export function useStores() {
 
 // Utility hook to clear all stores (for logout/reset)
 export function useClearStores() {
-  const { reset: resetAuth } = useAuthStore();
+  const { logout: logoutAuth } = useAuthStore();
   const { reset: resetProjects } = useProjectsStore();
   const { reset: resetGeneration } = useGenerationStore();
 
   return () => {
-    resetAuth();
+    logoutAuth();
     resetProjects();
     resetGeneration();
   };

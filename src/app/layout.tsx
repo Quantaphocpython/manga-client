@@ -1,5 +1,4 @@
-import { QueryProvider } from '@/components/providers/query-provider';
-import { StoreProvider } from '@/components/providers/store-provider';
+import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
@@ -39,9 +38,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-zinc-950 text-white`}
       >
-        <QueryProvider>
-          <StoreProvider>{children}</StoreProvider>
-        </QueryProvider>
+        <Providers>{children}</Providers>
         <Toaster />
         <Analytics />
       </body>

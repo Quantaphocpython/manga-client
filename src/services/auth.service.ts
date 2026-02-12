@@ -1,11 +1,11 @@
 import { ApiEndpoints } from '@/constants/api';
 import { AuthResponse, User } from '@/hooks/use-auth';
-import { BaseApiClient } from '@/services/api-client';
+import { AppApiClient } from '@/services/app-api-client';
 
 /**
  * Service for handling all authentication-related API calls.
  */
-class AuthService extends BaseApiClient {
+class AuthService extends AppApiClient {
   /**
    * Log in a user with credentials.
    * @param credentials - The login payload (e.g. email, password)
@@ -29,6 +29,13 @@ class AuthService extends BaseApiClient {
    */
   async logout(): Promise<void> {
     await this.post(ApiEndpoints.AUTH_LOGOUT);
+  }
+
+  /**
+   * Refreshes the access token.
+   */
+  async refreshToken(): Promise<string | null> {
+    return this.refreshAccessToken();
   }
 
   /**

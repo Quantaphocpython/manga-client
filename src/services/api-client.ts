@@ -1,196 +1,158 @@
-import { authStore } from './auth-client';
+import { BACKEND_BASE_URL } from '@/constants/api';
+import { authEventBus } from '@/lib/auth-events';
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from 'axios';
+import { toast } from 'sonner';
 
-authStore.loadFromStorage();
+export interface ApiRequestConfig extends AxiosRequestConfig {
+  disableToast?: boolean;
+  _retry?: boolean;
+}
 
-const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  'https://backend-manga-generator.onrender.com';
+export interface ApiClientConfig {
+  baseURL?: string;
+  getAccessToken: () => string | null;
+  getRefreshToken: () => string | null;
+  onTokenRefreshed: (access: string, refresh: string) => void;
+  onSessionExpired: () => void;
+}
 
-/**
- * Base API Client providing common networking logic.
- * Decouples low-level fetch/axios details from domain services.
- */
-export abstract class BaseApiClient {
-  protected baseURL: string;
+export class ApiClient {
+  protected instance: AxiosInstance;
+  protected config: ApiClientConfig;
 
-  constructor(baseURL: string = BACKEND_BASE_URL) {
-    this.baseURL = baseURL;
+  constructor(config: ApiClientConfig) {
+    this.config = config;
+    this.instance = axios.create({
+      baseURL: config.baseURL || BACKEND_BASE_URL,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    this.setupInterceptors();
   }
 
-  /**
-   * Resolves relative URLs to the backend base URL.
-   */
-  protected resolveUrl(path: string): string {
-    if (path.startsWith('http')) return path;
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    return `${this.baseURL}${cleanPath}`;
+  private setupInterceptors() {
+    this.instance.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const token = this.config.getAccessToken();
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+
+    this.instance.interceptors.response.use(
+      (response) => {
+        const raw = response.data;
+        return raw?.data ?? raw;
+      },
+      async (error) => {
+        const originalRequest = error.config as InternalAxiosRequestConfig &
+          ApiRequestConfig;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          console.log('[ApiClient] 401 detected, attempting refresh');
+          originalRequest._retry = true;
+
+          try {
+            const newToken = await this.refreshAccessToken();
+            if (newToken) {
+              console.log('[ApiClient] Token refreshed successfully');
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              }
+              return this.instance(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error('[ApiClient] Token refresh failed', refreshError);
+            // Refresh failed
+          }
+
+          console.log('[ApiClient] Session expired, clearing auth');
+          this.config.onSessionExpired();
+          authEventBus.emit('SESSION_EXPIRED');
+        }
+
+        const message =
+          (error.response?.data as any)?.message ||
+          error.message ||
+          'API request failed';
+
+        if (!originalRequest.disableToast) {
+          toast.error(message);
+        }
+
+        return Promise.reject(new Error(message));
+      },
+    );
   }
 
-  /**
-   * Refreshes the access token if possible.
-   */
   protected async refreshAccessToken(): Promise<string | null> {
-    const refreshToken = authStore.getRefreshToken();
+    const refreshToken = this.config.getRefreshToken();
     if (!refreshToken) return null;
 
     try {
-      const res = await fetch(this.resolveUrl('/api/auth/refresh'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-      });
+      const res = await axios.post(
+        `${this.instance.defaults.baseURL}/api/auth/refresh`,
+        { refreshToken },
+        { headers: { 'Content-Type': 'application/json' } },
+      );
 
-      if (!res.ok) return null;
+      const data = res.data?.data ?? res.data;
 
-      const raw = await res.json();
-      const payload = raw?.data ?? raw;
-
-      if (payload?.accessToken && payload?.refreshToken) {
-        authStore.setTokens(payload.accessToken, payload.refreshToken);
-        return payload.accessToken;
+      if (data?.accessToken && data?.refreshToken) {
+        this.config.onTokenRefreshed(data.accessToken, data.refreshToken);
+        return data.accessToken;
       }
     } catch (err) {
-      console.error('Token refresh failed:', err);
+      console.error('Token refresh failed');
+      authEventBus.emit('REFRESH_FAILED');
     }
 
     return null;
   }
 
-  /**
-   * Handles API responses and standardizes errors.
-   */
-  protected async handleResponse<T>(res: Response): Promise<T> {
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw new Error(
-        error.message || `API request failed with status ${res.status}`,
-      );
-    }
-    const raw = await res.json();
-    return (raw?.data ?? raw) as T;
+  public async get<T>(url: string, config?: ApiRequestConfig): Promise<T> {
+    return this.instance.get<any, T>(url, config);
   }
 
-  /**
-   * Core request method with auth injection and automatic retry on 401.
-   */
-  protected async request<T>(
-    path: string,
-    init: RequestInit = {},
-    retry = true,
+  public async post<T>(
+    url: string,
+    data?: any,
+    config?: ApiRequestConfig,
   ): Promise<T> {
-    const token = authStore.getAccessToken();
-    const headers = new Headers(init.headers || {});
-
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-    if (
-      !headers.has('Content-Type') &&
-      (init.method === 'POST' ||
-        init.method === 'PUT' ||
-        init.method === 'PATCH')
-    ) {
-      headers.set('Content-Type', 'application/json');
-    }
-
-    const res = await fetch(this.resolveUrl(path), { ...init, headers });
-
-    // Handle session expiry and refresh
-    if (res.status === 401 && retry) {
-      const newToken = await this.refreshAccessToken();
-      if (!newToken) {
-        authStore.clear();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
-        }
-        throw new Error('Unauthenticated');
-      }
-
-      const retryHeaders = new Headers(init.headers || {});
-      retryHeaders.set('Authorization', `Bearer ${newToken}`);
-
-      const retryRes = await fetch(this.resolveUrl(path), {
-        ...init,
-        headers: retryHeaders,
-      });
-      return this.handleResponse<T>(retryRes);
-    }
-
-    return this.handleResponse<T>(res);
+    return this.instance.post<any, T>(url, data, config);
   }
 
-  protected get<T>(
-    path: string,
-    options: Omit<RequestInit, 'method'> = {},
+  public async put<T>(
+    url: string,
+    data?: any,
+    config?: ApiRequestConfig,
   ): Promise<T> {
-    return this.request<T>(path, { ...options, method: 'GET' });
+    return this.instance.put<any, T>(url, data, config);
   }
 
-  protected post<T>(
-    path: string,
-    body?: any,
-    options: Omit<RequestInit, 'method' | 'body'> = {},
+  public async patch<T>(
+    url: string,
+    data?: any,
+    config?: ApiRequestConfig,
   ): Promise<T> {
-    return this.request<T>(path, {
-      ...options,
-      method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    return this.instance.patch<any, T>(url, data, config);
   }
 
-  protected put<T>(
-    path: string,
-    body?: any,
-    options: Omit<RequestInit, 'method' | 'body'> = {},
-  ): Promise<T> {
-    return this.request<T>(path, {
-      ...options,
-      method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
-    });
+  public async delete<T>(url: string, config?: ApiRequestConfig): Promise<T> {
+    return this.instance.delete<any, T>(url, config);
   }
 
-  protected patch<T>(
-    path: string,
-    body?: any,
-    options: Omit<RequestInit, 'method' | 'body'> = {},
-  ): Promise<T> {
-    return this.request<T>(path, {
-      ...options,
-      method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
-    });
-  }
-
-  protected delete<T>(
-    path: string,
-    options: Omit<RequestInit, 'method'> = {},
-  ): Promise<T> {
-    return this.request<T>(path, { ...options, method: 'DELETE' });
+  public async request<T>(config: ApiRequestConfig): Promise<T> {
+    return this.instance.request<any, T>(config);
   }
 }
-
-class InternalApiClient extends BaseApiClient {}
-
-/**
- * Legacy support for simple fetch calls.
- * Deprecated: Use Domain Services instead.
- */
-export const apiFetch = async (
-  input: RequestInfo,
-  init: RequestInit = {},
-): Promise<Response> => {
-  const client = new InternalApiClient();
-  const path = typeof input === 'string' ? input : input.url;
-
-  // We return a Response object to maintain compatibility with legacy code
-  // apiFetch was expected to return Response, not T.
-  const token = authStore.getAccessToken();
-  const headers = new Headers(init.headers || {});
-  if (token) headers.set('Authorization', `Bearer ${token}`);
-
-  const resolvedUrl = path.startsWith('/api/')
-    ? `${BACKEND_BASE_URL}${path}`
-    : path;
-  return fetch(resolvedUrl, { ...init, headers });
-};

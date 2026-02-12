@@ -8,6 +8,7 @@ import {
 } from '@/services/storage.service';
 import type { MangaProject } from '@/types';
 import { Eye, Heart, MessageCircle, Search, TrendingUp, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -34,8 +35,8 @@ export default function CommunityPage() {
   const limit = 18;
 
   const loadProjects = useCallback(
-    async (reset: boolean = false) => {
-      const currentPage = reset ? 0 : page;
+    async (pageIndex: number, reset: boolean = false) => {
+      const currentPage = pageIndex;
       setLoading(true);
 
       try {
@@ -64,12 +65,12 @@ export default function CommunityPage() {
         setLoading(false);
       }
     },
-    [searchQuery, sortBy, selectedTags, page, limit],
+    [searchQuery, sortBy, selectedTags, limit],
   );
 
   useEffect(() => {
-    loadProjects(true);
-  }, [searchQuery, sortBy, selectedTags]);
+    loadProjects(0, true);
+  }, [loadProjects]);
 
   useEffect(() => {
     const loadTrending = async () => {
@@ -87,8 +88,9 @@ export default function CommunityPage() {
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
-      setPage((prev) => prev + 1);
-      loadProjects(false);
+      const nextPage = page + 1;
+      setPage(nextPage);
+      loadProjects(nextPage, false);
     }
   };
 
@@ -139,18 +141,22 @@ export default function CommunityPage() {
                 href={`/community/${encodeURIComponent(project.ownerId!)}/${encodeURIComponent(project.id)}`}
                 className="group rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden hover:border-amber-400/70 transition-all"
               >
-                <div className="h-24 bg-zinc-800/80 flex items-center justify-center">
+                <div className="h-24 bg-zinc-800/80 flex items-center justify-center relative">
                   {project.coverImageUrl ? (
-                    <img
+                    <Image
                       src={project.coverImageUrl}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 33vw, 16vw"
                     />
                   ) : project.pages?.[0]?.url ? (
-                    <img
+                    <Image
                       src={project.pages[0].url}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 33vw, 16vw"
                     />
                   ) : (
                     <span className="text-[10px] text-zinc-500">
@@ -275,16 +281,20 @@ export default function CommunityPage() {
                 <div className="group rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden hover:border-amber-400/70 hover:shadow-[0_0_35px_rgba(251,191,36,0.25)] transition-all h-full flex flex-col">
                   <div className="h-40 bg-zinc-800/80 flex items-center justify-center relative overflow-hidden">
                     {project.coverImageUrl ? (
-                      <img
+                      <Image
                         src={project.coverImageUrl}
                         alt={project.title || 'Manga cover'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : project.pages?.[0]?.url ? (
-                      <img
+                      <Image
                         src={project.pages[0].url}
                         alt={project.title || 'Manga cover'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
                       <span className="text-xs text-zinc-500 opacity-70">

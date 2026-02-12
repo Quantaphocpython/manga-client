@@ -1,7 +1,4 @@
-import {
-  generateMangaImage,
-  generateNextPrompt,
-} from '@/services/gemini-service';
+import { geminiService } from '@/services/gemini.service';
 import { GeneratedManga } from '@/types';
 import { generateId } from '@/utils/id';
 import { NextRequest, NextResponse } from 'next/server';
@@ -32,7 +29,7 @@ export async function POST(request: NextRequest) {
         // Generate prompt if auto-continue or not first page or no prompt
         if (isAutoContinue || i > 0 || !prompt?.trim()) {
           try {
-            currentPrompt = await generateNextPrompt(
+            currentPrompt = await geminiService.generateNextPrompt(
               currentSessionHistory,
               config.context || '',
               i === 0 && prompt?.trim() ? prompt : '',
@@ -49,7 +46,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Generate image
-        const imageUrl = await generateMangaImage(
+        const imageUrl = await geminiService.generateMangaImage(
           currentPrompt,
           config,
           currentSessionHistory,
@@ -59,7 +56,7 @@ export async function POST(request: NextRequest) {
         const generatedManga: GeneratedManga = {
           id: generateId(),
           prompt: currentPrompt,
-          imageUrl: imageUrl,
+          url: imageUrl,
           timestamp: Date.now(),
           config: { ...config },
         };

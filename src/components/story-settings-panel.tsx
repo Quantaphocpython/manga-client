@@ -21,6 +21,7 @@ import {
   ScreentoneDensity,
 } from '@/types';
 import { Image as ImageIcon, Upload, X } from 'lucide-react';
+import Image from 'next/image';
 import { useRef, useState } from 'react';
 
 interface StorySettingsPanelProps {
@@ -212,23 +213,25 @@ export default function StorySettingsPanel({
               {config.referenceImages && config.referenceImages.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-zinc-400 mb-2">
-                    Click checkbox to enable/disable. Disabled images won't be
-                    used in generation but will be saved.
+                    Click checkbox to enable/disable. Disabled images won&apos;t
+                    be used in generation but will be saved.
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {config.referenceImages.map((img, idx) => {
                       const imageUrl = getImageUrl(img);
                       const enabled = isImageEnabled(img);
                       return (
-                        <div key={idx} className="relative group">
-                          <img
+                        <div key={idx} className="relative group h-20 w-full">
+                          <Image
                             src={imageUrl}
                             alt={`Reference ${idx + 1}`}
-                            className={`w-full h-20 object-cover rounded border transition-all ${
+                            fill
+                            className={`object-cover rounded border transition-all ${
                               enabled
                                 ? 'border-zinc-800 opacity-100'
                                 : 'border-zinc-700 opacity-50 grayscale'
                             }`}
+                            sizes="(max-width: 768px) 50vw, 33vw"
                           />
                           {/* Enable/Disable Checkbox */}
                           <button

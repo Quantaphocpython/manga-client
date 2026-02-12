@@ -65,3 +65,7 @@ export enum ApiEndpoints {
   GROK_GENERATE = '/api/grok/generate',
   GROK_HISTORY = '/api/grok/history',
 }
+
+export const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  'https://backend-manga-generator.onrender.com';

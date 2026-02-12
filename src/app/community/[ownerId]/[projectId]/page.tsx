@@ -4,6 +4,7 @@ import { communityService } from '@/services/community.service';
 import { storageService } from '@/services/storage.service';
 import type { MangaProject, ProjectComment } from '@/types';
 import { Eye, Heart, MessageCircle, TrendingUp } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -220,12 +221,14 @@ export default function CommunityProjectDetailPage() {
 
       <div className="flex flex-col md:flex-row gap-6 md:items-start">
         <div className="w-full md:w-1/3 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900/60">
-          <div className="aspect-[3/4] bg-zinc-800/80 flex items-center justify-center">
+          <div className="aspect-[3/4] bg-zinc-800/80 flex items-center justify-center relative">
             {cover ? (
-              <img
+              <Image
                 src={cover}
                 alt={project.title || 'Manga cover'}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
               />
             ) : (
               <span className="text-xs text-zinc-500">Chưa có ảnh preview</span>
@@ -300,11 +303,13 @@ export default function CommunityProjectDetailPage() {
                 key={page.id}
                 className="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/60"
               >
-                <div className="aspect-[3/4] bg-zinc-800/80">
-                  <img
+                <div className="aspect-[3/4] bg-zinc-800/80 relative">
+                  <Image
                     src={page.url}
                     alt={`Page ${idx + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, 33vw"
                   />
                 </div>
                 <div className="px-2 py-1.5 text-[11px] text-zinc-400 text-center">
@@ -362,18 +367,22 @@ export default function CommunityProjectDetailPage() {
                 href={`/community/${encodeURIComponent(related.ownerId!)}/${encodeURIComponent(related.id)}`}
                 className="group rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden hover:border-amber-400/70 transition-all"
               >
-                <div className="h-32 bg-zinc-800/80 flex items-center justify-center">
+                <div className="h-32 bg-zinc-800/80 flex items-center justify-center relative">
                   {related.coverImageUrl ? (
-                    <img
+                    <Image
                       src={related.coverImageUrl}
                       alt={related.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                      sizes="(max-width: 768px) 33vw, 16vw"
                     />
                   ) : related.pages?.[0]?.url ? (
-                    <img
+                    <Image
                       src={related.pages[0].url}
                       alt={related.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                      sizes="(max-width: 768px) 33vw, 16vw"
                     />
                   ) : (
                     <span className="text-[10px] text-zinc-500">

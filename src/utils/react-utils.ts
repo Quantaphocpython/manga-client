@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useRef, useEffect, useState } from 'react';
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { generateId } from './id';
 
 /**
@@ -24,7 +26,7 @@ export function useDebounce<T>(value: T, delay: number): T {
  * Custom hook for stable callback references
  */
 export function useStableCallback<T extends (...args: any[]) => any>(
-  callback: T
+  callback: T,
 ): T {
   const callbackRef = useRef(callback);
 
@@ -34,7 +36,7 @@ export function useStableCallback<T extends (...args: any[]) => any>(
 
   return useCallback(
     ((...args: any[]) => callbackRef.current(...args)) as T,
-    []
+    [],
   );
 }
 
@@ -43,7 +45,7 @@ export function useStableCallback<T extends (...args: any[]) => any>(
  */
 export function useMemoized<T>(
   factory: () => T,
-  deps: React.DependencyList
+  deps: React.DependencyList,
 ): T {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(factory, deps);
@@ -71,9 +73,9 @@ export { generateId };
 /**
  * Normalize session data
  */
-export function normalizeSession<T extends { chatHistory?: any[]; pages?: any[] }>(
-  session: T
-): T {
+export function normalizeSession<
+  T extends { chatHistory?: any[]; pages?: any[] },
+>(session: T): T {
   return {
     ...session,
     chatHistory: safeArray(session.chatHistory),
@@ -93,4 +95,3 @@ export function isImageId(url: string | undefined | null): boolean {
     url.length < 200
   );
 }
-

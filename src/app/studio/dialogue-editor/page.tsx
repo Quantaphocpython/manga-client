@@ -12,8 +12,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  useAddDialogue,
+  useSuggestDialogue,
+} from '@/features/generate/hooks/use-generate';
 import { DialogueBubble, DialogueSuggestion } from '@/types/generate';
-import { useAddDialogue, useSuggestDialogue } from '@/hooks/use-generate';
 import {
   BookOpen,
   CloudLightning,
@@ -28,6 +31,7 @@ import {
   Upload,
   Wand2,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -331,13 +335,15 @@ export default function DialogueEditorPage() {
                 {imageUrl ? (
                   <div
                     ref={imageContainerRef}
-                    className="relative w-full aspect-[3/4] bg-zinc-800 rounded-lg overflow-hidden cursor-crosshair"
+                    className="relative w-full aspect-3/4 bg-zinc-800 rounded-lg overflow-hidden cursor-crosshair"
                     onClick={handleImageClick}
                   >
-                    <img
+                    <Image
                       src={resultImageUrl || imageUrl}
                       alt="Manga panel"
-                      className="w-full h-full object-contain"
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 60vw"
                     />
 
                     {/* Dialogue bubble markers */}
@@ -376,7 +382,7 @@ export default function DialogueEditorPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="w-full aspect-[3/4] bg-zinc-800 rounded-lg flex flex-col items-center justify-center">
+                  <div className="w-full aspect-3/4 bg-zinc-800 rounded-lg flex flex-col items-center justify-center">
                     <Upload className="w-12 h-12 text-zinc-600 mb-4" />
                     <p className="text-zinc-400 text-center mb-2">
                       Upload a manga panel to start editing

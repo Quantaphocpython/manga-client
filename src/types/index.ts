@@ -203,4 +203,5 @@ export interface ProjectComment {
 }
 
 // Re-export canvas types
+export * from './api';
 export * from './canvas';

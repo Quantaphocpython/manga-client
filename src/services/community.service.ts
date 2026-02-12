@@ -1,5 +1,5 @@
 import { ApiEndpoints } from '@/constants/api';
-import { BaseApiClient } from '@/services/api-client';
+import { AppApiClient } from '@/services/app-api-client';
 import type { MangaProject, ProjectComment } from '@/types';
 import { formatUrl } from '@/utils/api-formatter';
 
@@ -11,7 +11,7 @@ export interface LikeStatus {
 /**
  * Service for handling community-related API calls (trending, likes, comments).
  */
-class CommunityService extends BaseApiClient {
+class CommunityService extends AppApiClient {
   /**
    * Fetch details for a public project.
    */

@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import { useGenerateClean } from '@/hooks/use-generate';
+import { ROUTES } from '@/constants/routes';
+import { useGenerateClean } from '@/features/generate/hooks/use-generate';
 import {
   ArrowRight,
   Image as ImageIcon,
@@ -28,6 +29,7 @@ import {
   Sparkles,
   Wand2,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -85,7 +87,7 @@ export default function GenerateCleanPage() {
   const goToDialogueEditor = (imageUrl: string) => {
     // Store image in sessionStorage for dialogue editor
     sessionStorage.setItem('dialogueEditorImage', imageUrl);
-    router.push('/studio/dialogue-editor');
+    router.push(ROUTES.STUDIO.DIALOGUE_EDITOR);
   };
 
   return (
@@ -257,10 +259,12 @@ export default function GenerateCleanPage() {
                         className="relative group cursor-pointer rounded-lg overflow-hidden border border-zinc-700 hover:border-amber-500 transition-all"
                         onClick={() => goToDialogueEditor(imageUrl)}
                       >
-                        <img
+                        <Image
                           src={imageUrl}
                           alt={`Generated panel ${idx + 1}`}
-                          className="w-full aspect-[3/4] object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 33vw"
                         />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <Button variant="secondary" className="gap-2">
@@ -292,13 +296,13 @@ export default function GenerateCleanPage() {
 
         {/* Quick Links */}
         <div className="mt-8 flex justify-center gap-4">
-          <Link href="/studio/dialogue-editor">
+          <Link href={ROUTES.STUDIO.DIALOGUE_EDITOR}>
             <Button variant="outline" className="gap-2">
               <Wand2 className="w-4 h-4" />
               Open Dialogue Editor
             </Button>
           </Link>
-          <Link href="/studio">
+          <Link href={ROUTES.STUDIO.ROOT}>
             <Button variant="outline" className="gap-2">
               <Layout className="w-4 h-4" />
               Back to Studio

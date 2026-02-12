@@ -1,5 +1,3 @@
-import CanvasEditorPage from '@/components/canvas-editor'
+import { CanvasEditor } from '@/features/canvas-editor';
 
-export default function Page() {
-  return <CanvasEditorPage />
-}
+export default CanvasEditor;

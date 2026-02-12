@@ -1,14 +1,17 @@
 'use client';
 
+import NextImage from 'next/image';
+
+import { LoadingPage } from '@/components/ui/loading';
 import { storageService } from '@/services/storage.service';
 import { GeneratedManga, MangaProject, MangaSession } from '@/types';
 import { generateId } from '@/utils/id';
 import jsPDF from 'jspdf';
 import { Download, Layers, Plus, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-export default function PreviewPage() {
+function PreviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [project, setProject] = useState<MangaProject | null>(null);
@@ -380,10 +383,12 @@ export default function PreviewPage() {
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {session.pages.map((page) => (
                               <div key={page.id} className="relative group">
-                                <img
+                                <NextImage
                                   src={page.url || '/placeholder.svg'}
                                   alt=""
-                                  className="w-full aspect-[3/4] object-cover rounded-lg border-2 border-zinc-200"
+                                  fill
+                                  className="object-cover rounded-lg border-2 border-zinc-200"
+                                  sizes="(max-width: 768px) 50vw, 25vw"
                                 />
                                 <button
                                   onClick={async () => {
@@ -479,10 +484,12 @@ export default function PreviewPage() {
                     }`}
                     onClick={() => togglePageExport(page.id)}
                   >
-                    <img
+                    <NextImage
                       src={page.url || '/placeholder.svg'}
                       alt=""
-                      className="w-full aspect-[3/4] object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, 25vw"
                     />
                     {page.markedForExport && (
                       <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg">
@@ -509,10 +516,14 @@ export default function PreviewPage() {
               {exportPages.map((page, idx) => (
                 <div key={page.id} className="flex flex-col items-center">
                   <div className="w-full bg-white shadow-2xl border border-zinc-100">
-                    <img
+                    <NextImage
                       src={page.url || '/placeholder.svg'}
                       alt={`Page ${idx + 1}`}
+                      width={0}
+                      height={0}
+                      sizes="100vw"
                       className="w-full h-auto block"
+                      style={{ width: '100%', height: 'auto' }}
                     />
                   </div>
                   <div className="mt-4 text-center text-zinc-400 font-manga text-xl">
@@ -528,13 +539,19 @@ export default function PreviewPage() {
             <div className="hidden print:block">
               {exportPages.map((page, idx) => (
                 <div key={`print-${page.id}`} className="page-break">
-                  <img
+                  <NextImage
                     src={page.url || '/placeholder.svg'}
                     alt={`Page ${idx + 1}`}
-                    onError={(e) => {
-                      console.error('Failed to load image:', page.url);
-                      e.currentTarget.src = '/placeholder.svg';
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      maxWidth: '100%',
+                      maxHeight: '100vh',
                     }}
+                    priority
                   />
                 </div>
               ))}
@@ -611,5 +628,17 @@ export default function PreviewPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function PreviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <LoadingPage className="min-h-screen" message="Loading preview..." />
+      }
+    >
+      <PreviewContent />
+    </Suspense>
   );
 }

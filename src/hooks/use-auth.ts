@@ -1,4 +1,4 @@
-import { authService } from '@/services/auth.service';
+import { authService } from '@/services';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -35,9 +35,11 @@ export const authKeys = {
 
 export function useUser() {
   const setUser = useAuthStore((state) => state.setUser);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   return useQuery({
     queryKey: authKeys.user,
+    enabled: !!accessToken,
     queryFn: async () => {
       const user = await authService.getProfile();
       setUser(user);

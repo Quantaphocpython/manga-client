@@ -1,6 +1,5 @@
 'use client';
 
-import { PasswordStrengthIndicator } from '@/components/auth/password-strength';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -12,6 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PasswordStrengthIndicator } from '@/features/auth/components/password-strength';
 import { useRegister } from '@/hooks/use-auth';
 import { registerSchema, type RegisterFormData } from '@/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';

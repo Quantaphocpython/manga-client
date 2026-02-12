@@ -1,5 +1,5 @@
 import { ApiEndpoints } from '@/constants/api';
-import { BaseApiClient } from '@/services/api-client';
+import { AppApiClient } from '@/services/app-api-client';
 import { GeneratedManga, MangaProject, MangaSession } from '@/types';
 import { formatUrl } from '@/utils/api-formatter';
 
@@ -26,7 +26,7 @@ export interface FetchPublicProjectsResult {
 /**
  * Service for handling all storage and project-related API calls.
  */
-class StorageService extends BaseApiClient {
+class StorageService extends AppApiClient {
   /**
    * Save project to backend
    */
@@ -84,7 +84,7 @@ class StorageService extends BaseApiClient {
       if (ownerId) params.ownerId = ownerId;
 
       // Note: We use the base request because we need to append query params manually for now
-      // or we could enhance the BaseApiClient to support query params in get().
+      // or we could enhance the ApiClient to support query params in get().
       const queryString = new URLSearchParams(params).toString();
       const url = `${ApiEndpoints.PROJECTS_PUBLIC}?${queryString}`;
 

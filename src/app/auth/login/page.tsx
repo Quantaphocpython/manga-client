@@ -16,11 +16,11 @@ import { loginSchema, type LoginFormData } from '@/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const { mutate: login, isPending: isLoading } = useLogin();
@@ -222,7 +222,7 @@ export default function LoginPage() {
           className="text-sm text-zinc-400 dark:text-neutral-400"
           style={{ fontFamily: 'var(--font-inter)' }}
         >
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
         </span>
         <Link
           href="/auth/register"
@@ -233,5 +233,13 @@ export default function LoginPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-white">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

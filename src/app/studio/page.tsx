@@ -1,5 +1,5 @@
-import MangaGeneratorV2 from '@/components/manga-generator-v2';
+import { MangaStudio } from '@/features/studio';
 
 export default function AppPage() {
-  return <MangaGeneratorV2 />;
+  return <MangaStudio />;
 }

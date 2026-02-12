@@ -2,17 +2,19 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { LoadingPage } from '@/components/ui/loading';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { storageService } from '@/services/storage.service';
 import { userService } from '@/services/user.service';
 import type { MangaProject, UserProfile } from '@/types';
 import { Camera, Sparkles, X } from 'lucide-react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function ProfilePage() {
+function ProfileContent() {
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [projects, setProjects] = useState<MangaProject[]>([]);
@@ -583,12 +585,14 @@ export default function ProfilePage() {
                   key={project.id}
                   className="rounded-2xl border border-zinc-800 bg-zinc-900/60 overflow-hidden flex flex-col"
                 >
-                  <div className="h-40 bg-zinc-800/80 flex items-center justify-center">
+                  <div className="h-40 bg-zinc-800/80 flex items-center justify-center relative">
                     {cover ? (
-                      <img
+                      <Image
                         src={cover}
                         alt={project.title || 'Manga cover'}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
                       <span className="text-xs text-zinc-500">
@@ -686,5 +690,15 @@ export default function ProfilePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={<LoadingPage className="py-24" message="Đang tải profile..." />}
+    >
+      <ProfileContent />
+    </Suspense>
   );
 }
