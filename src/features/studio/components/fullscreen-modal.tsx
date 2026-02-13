@@ -1,6 +1,6 @@
 'use client';
 
-import { ROUTES } from '@/constants/routes';
+import { Route } from '@/constants';
 import { Eye, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -54,7 +54,7 @@ export default function FullscreenModal({
               e.stopPropagation();
               onAddToProject(true);
               onClose();
-              router.push(ROUTES.STUDIO.PREVIEW);
+              router.push(Route.STUDIO_PREVIEW);
             }}
             className="px-6 py-3 bg-linear-to-b from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-lg"
             style={{ fontFamily: 'var(--font-inter)' }}

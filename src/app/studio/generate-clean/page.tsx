@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import { ROUTES } from '@/constants/routes';
+import { Route } from '@/constants';
 import { useGenerateClean } from '@/features/generate/hooks/use-generate';
 import {
   ArrowRight,
@@ -40,8 +40,6 @@ export default function GenerateCleanPage() {
   const [prompt, setPrompt] = useState('');
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [totalPages, setTotalPages] = useState(1);
-
-  // Config options
   const [style, setStyle] = useState<
     'anime' | 'realistic' | 'manga' | 'webcomic'
   >('manga');
@@ -58,10 +56,13 @@ export default function GenerateCleanPage() {
         prompt: prompt || undefined,
         config: {
           style,
-          genre: 'general',
-          colorScheme,
-          resolution: 'high',
+          inking: 'G-Pen',
+          screentone: 'None',
+          layout: 'Single Panel',
           aspectRatio,
+          useColor: colorScheme === 'color',
+          dialogueDensity: 'No Dialogue',
+          language: 'English',
         },
         totalPages,
       },
@@ -87,7 +88,7 @@ export default function GenerateCleanPage() {
   const goToDialogueEditor = (imageUrl: string) => {
     // Store image in sessionStorage for dialogue editor
     sessionStorage.setItem('dialogueEditorImage', imageUrl);
-    router.push(ROUTES.STUDIO.DIALOGUE_EDITOR);
+    router.push(Route.STUDIO_DIALOGUE);
   };
 
   return (
@@ -200,7 +201,7 @@ export default function GenerateCleanPage() {
                   </Label>
                   <Slider
                     value={[totalPages]}
-                    onValueChange={(v) => setTotalPages(v[0])}
+                    onValueChange={(v: number[]) => setTotalPages(v[0])}
                     min={1}
                     max={5}
                     step={1}
@@ -296,13 +297,13 @@ export default function GenerateCleanPage() {
 
         {/* Quick Links */}
         <div className="mt-8 flex justify-center gap-4">
-          <Link href={ROUTES.STUDIO.DIALOGUE_EDITOR}>
+          <Link href={Route.STUDIO_DIALOGUE}>
             <Button variant="outline" className="gap-2">
               <Wand2 className="w-4 h-4" />
               Open Dialogue Editor
             </Button>
           </Link>
-          <Link href={ROUTES.STUDIO.ROOT}>
+          <Link href={Route.STUDIO}>
             <Button variant="outline" className="gap-2">
               <Layout className="w-4 h-4" />
               Back to Studio

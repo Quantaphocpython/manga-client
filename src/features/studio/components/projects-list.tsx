@@ -1,12 +1,12 @@
 'use client';
 
-import { ConfirmDialog } from '@/components/modals/confirm-dialog';
-import { ProjectSettingsModal } from '@/components/modals/project-settings-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingCard, LoadingGrid } from '@/components/ui/loading';
 import { useModal } from '@/components/ui/modal';
+import { ConfirmDialog } from '@/features/app-shell/components/modals/confirm-dialog';
 import { useDeleteProject, useProjects } from '@/features/projects';
+import { ProjectSettingsModal } from '@/features/projects/components/modals/project-settings-modal';
 import { useProjectsStore } from '@/stores/projects.store';
 import { useUIStore } from '@/stores/ui.store';
 import { Plus, Settings, Share2, Trash2 } from 'lucide-react';
@@ -143,7 +143,7 @@ export function ProjectsList() {
                   onClick={() =>
                     presentProjectSettings({
                       project,
-                      onSave: (settings) => {
+                      onSave: (settings: any) => {
                         // Handle save
                       },
                       onClose: () => {},

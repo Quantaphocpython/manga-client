@@ -1,24 +1,20 @@
-export const ROUTES = {
-  HOME: '/',
-  LANDING: '/landing-v2',
-  AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-  },
-  STUDIO: {
-    ROOT: '/studio',
-    CANVAS_EDITOR: '/studio/canvas-editor',
-    DIALOGUE_EDITOR: '/studio/dialogue-editor',
-    GENERATE_CLEAN: '/studio/generate-clean',
-    PREVIEW: '/studio/preview',
-  },
-  PROFILE: '/profile',
-  COMMUNITY: '/community',
-} as const;
+export enum Route {
+  HOME = '/',
+  LANDING = '/landing-v2',
+  LOGIN = '/auth/login',
+  REGISTER = '/auth/register',
+  STUDIO = '/studio',
+  STUDIO_CANVAS = '/studio/canvas-editor',
+  STUDIO_DIALOGUE = '/studio/dialogue-editor',
+  STUDIO_GENERATE = '/studio/generate-clean',
+  STUDIO_PREVIEW = '/studio/preview',
+  PROFILE = '/profile',
+  COMMUNITY = '/community',
+}
 
 export const PUBLIC_ROUTES = [
-  ROUTES.HOME,
-  ROUTES.LANDING,
-  ROUTES.AUTH.LOGIN,
-  ROUTES.AUTH.REGISTER,
+  Route.HOME,
+  Route.LANDING,
+  Route.LOGIN,
+  Route.REGISTER,
 ];

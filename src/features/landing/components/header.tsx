@@ -9,9 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useModal } from '@/components/ui/modal';
+import { Route } from '@/constants';
+import { WalletDetailsModal } from '@/features/auth/components/modals/wallet-details-modal';
 import { useLogout, useUser } from '@/hooks/use-auth';
 import { useAuthStore } from '@/stores/auth.store';
-import { LogOut, User } from 'lucide-react';
+import { usePrivy as useWallet } from '@privy-io/react-auth';
+import { LogOut, Network, User, Wallet } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -21,6 +25,29 @@ export function Header() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile } = useUser();
   const { mutate: logout } = useLogout();
+
+  const {
+    login: connectWallet,
+    logout: disconnectWallet,
+    authenticated,
+    user: walletUser,
+    ready,
+  } = useWallet();
+
+  const [presentWalletDetails] = useModal(WalletDetailsModal);
+
+  const walletAddress = walletUser?.wallet?.address;
+  const shortAddress = walletAddress
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : '';
+
+  const handleOpenWalletModal = () => {
+    if (!walletAddress) return;
+    presentWalletDetails({
+      address: walletAddress,
+      onDisconnect: disconnectWallet,
+    });
+  };
 
   const handleSignOut = () => {
     logout();
@@ -75,31 +102,79 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Web3 Wallet Integration */}
+        <div className="flex items-center gap-4">
+          {/* Web3 Wallet Integration */}
+          <div className="flex items-center">
+            {ready && authenticated ? (
+              <div className="flex items-center gap-3">
+                <div className="hidden lg:flex flex-col items-end">
+                  <span className="text-[10px] font-bold text-amber-500/80 flex items-center gap-1 leading-none mb-0.5 tracking-wider">
+                    <Network size={10} />
+                    TESTNET
+                  </span>
+                  <span className="text-xs font-mono font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors">
+                    {shortAddress}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleOpenWalletModal}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 bg-zinc-900 border-zinc-800 hover:border-amber-500/50 hover:bg-zinc-800 text-zinc-300 hover:text-amber-400 h-9 px-3 rounded-full transition-all"
+                >
+                  <div className="w-5 h-5 rounded-full bg-linear-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-bold text-[10px] shadow-sm">
+                    {shortAddress.slice(0, 2).toUpperCase()}
+                  </div>
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => connectWallet()}
+                disabled={!ready}
+                variant="outline"
+                size="sm"
+                className="gap-2 bg-zinc-900/50 border-amber-500/20 hover:border-amber-500/50 hover:bg-zinc-900 text-amber-500 hover:text-amber-400 h-9 font-semibold transition-all shadow-[0_0_10px_-5px_theme(colors.amber.500/20)] hover:shadow-[0_0_15px_-5px_theme(colors.amber.500/30)]"
+              >
+                <Wallet size={14} />
+                <span className="hidden sm:inline">Connect Wallet</span>
+                <span className="sm:hidden">Connect</span>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="h-6 w-px bg-zinc-800" />
+
         {isAuthenticated ? (
-          <>
+          <div className="flex items-center gap-3">
             <Button
               asChild
               variant="ghost"
               size="sm"
-              className="hidden sm:inline-flex"
+              className="hidden sm:inline-flex text-zinc-400 hover:text-white hover:bg-zinc-800"
             >
               <Link href="/studio">Studio</Link>
             </Button>
             <AnimatedShinyButton
               url="/community"
-              className="hidden sm:inline-flex text-xs sm:text-sm [--shiny-cta-highlight:#38bdf8] [--shiny-cta-highlight-subtle:#0ea5e9]"
+              className="hidden sm:inline-flex text-xs h-9 px-4 [--shiny-cta-highlight:#38bdf8] [--shiny-cta-highlight-subtle:#0ea5e9]"
             >
-              <span style={{ fontFamily: 'var(--font-inter)' }}>Community</span>
+              <span
+                style={{ fontFamily: 'var(--font-inter)', fontWeight: 600 }}
+              >
+                Community
+              </span>
             </AnimatedShinyButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="outline-none focus:outline-none">
-                  <Avatar className="h-9 w-9 cursor-pointer border-2 border-zinc-700 hover:border-amber-400 transition-colors">
+                <button className="outline-none focus:outline-none ml-1">
+                  <Avatar className="h-9 w-9 cursor-pointer border-2 border-zinc-800 hover:border-amber-500 transition-all shadow-lg hover:shadow-amber-500/20">
                     <AvatarImage
                       src={profile?.avatar}
                       alt={profile?.displayName || profile?.username}
                     />
-                    <AvatarFallback className="bg-zinc-800 text-amber-400 text-sm font-semibold">
+                    <AvatarFallback className="bg-zinc-800 text-amber-500 text-sm font-bold">
                       {profile
                         ? getInitials(profile.displayName || profile.username)
                         : 'U'}
@@ -109,29 +184,29 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-56 bg-zinc-900 border-zinc-800"
+                className="w-56 bg-zinc-950 border-zinc-800 text-zinc-200"
               >
-                <div className="px-2 py-1.5">
+                <div className="px-2 py-1.5 bg-zinc-900/50">
                   <p className="text-sm font-medium text-white">
                     {profile?.displayName || profile?.username || 'User'}
                   </p>
                   {profile?.username && profile?.displayName && (
-                    <p className="text-xs text-zinc-400 truncate">
+                    <p className="text-xs text-zinc-500 truncate font-mono mt-0.5">
                       @{profile.username}
                     </p>
                   )}
                 </div>
                 <DropdownMenuSeparator className="bg-zinc-800" />
                 <DropdownMenuItem
-                  className="cursor-pointer text-zinc-300 hover:text-white hover:bg-zinc-800"
+                  className="cursor-pointer focus:bg-zinc-800 focus:text-white"
                   onClick={() => router.push('/profile')}
                 >
-                  <User className="mr-2 h-4 w-4" />
+                  <User className="mr-2 h-4 w-4 text-zinc-400 " />
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-zinc-800" />
                 <DropdownMenuItem
-                  className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-950/20"
+                  className="cursor-pointer text-red-400 focus:text-red-300 focus:bg-red-950/30"
                   onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -139,36 +214,37 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="flex items-center gap-3">
             <Button
               asChild
               variant="ghost"
               size="sm"
-              className="hidden sm:inline-flex"
+              className="hidden sm:inline-flex text-zinc-400 hover:text-white hover:bg-zinc-800 h-9"
             >
               <Link href="/auth/login">Sign In</Link>
             </Button>
-            <AnimatedShinyButton
-              url="/community"
-              className="hidden sm:inline-flex text-xs sm:text-sm [--shiny-cta-highlight:#38bdf8] [--shiny-cta-highlight-subtle:#0ea5e9]"
-            >
-              <span style={{ fontFamily: 'var(--font-inter)' }}>Community</span>
-            </AnimatedShinyButton>
-            <Link href="/auth/login">
-              <Avatar className="h-9 w-9 cursor-pointer border-2 border-zinc-700 hover:border-amber-400 transition-colors">
+
+            <Link href="/auth/login" className="sm:hidden">
+              <Avatar className="h-9 w-9 cursor-pointer border border-zinc-700 hover:border-amber-400 transition-colors">
                 <AvatarFallback className="bg-zinc-800 text-amber-400 text-sm font-semibold">
                   <User className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <AnimatedShinyButton url="/auth/register" className="text-sm">
-              <span style={{ fontFamily: 'var(--font-inter)' }}>
+
+            <AnimatedShinyButton
+              url={Route.REGISTER}
+              className="text-sm h-9 px-5"
+            >
+              <span
+                style={{ fontFamily: 'var(--font-inter)', fontWeight: 600 }}
+              >
                 Get Started
               </span>
             </AnimatedShinyButton>
-          </>
+          </div>
         )}
       </div>
     </header>

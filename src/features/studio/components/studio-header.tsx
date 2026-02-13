@@ -1,15 +1,20 @@
-import { ROUTES } from '@/constants/routes';
+import { useModal } from '@/components/ui/modal';
+import { Route } from '@/constants';
+import { WalletDetailsModal } from '@/features/auth/components/modals/wallet-details-modal';
 import { authStore } from '@/stores/auth.store';
 import { useProjectsStore } from '@/stores/projects.store';
 import { useStudioUIStore } from '@/stores/studio-ui.store';
 import { useUIStore } from '@/stores/ui.store';
+import { usePrivy as useWallet } from '@privy-io/react-auth';
 import {
   Download,
   Eye,
   Layers,
   LogOut,
   MessageSquare,
+  Network,
   Settings,
+  Wallet as WalletIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -33,6 +38,29 @@ export const StudioHeader = () => {
     setStudioState,
   } = useStudioUIStore();
 
+  const {
+    login: connectWallet,
+    logout: disconnectWallet,
+    authenticated,
+    user: walletUser,
+    ready,
+  } = useWallet();
+
+  const [presentWalletDetails] = useModal(WalletDetailsModal);
+
+  const walletAddress = walletUser?.wallet?.address;
+  const shortAddress = walletAddress
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : '';
+
+  const handleOpenWalletModal = () => {
+    if (!walletAddress) return;
+    presentWalletDetails({
+      address: walletAddress,
+      onDisconnect: disconnectWallet,
+    });
+  };
+
   const exportCount = currentSession
     ? currentSession.pages.filter((p) => p.markedForExport).length
     : (currentProject?.pages || []).filter((p) => p.markedForExport).length;
@@ -41,14 +69,14 @@ export const StudioHeader = () => {
     authStore.clear();
     authStore.setError(null);
     toast.success('Signed out successfully');
-    router.push(ROUTES.AUTH.LOGIN);
+    router.push(Route.LOGIN);
   };
 
   return (
     <header className="h-14 sm:h-16 border-b border-zinc-800/50 bg-zinc-950/95 backdrop-blur-md flex items-center justify-between px-3 sm:px-4 lg:px-8 shrink-0 shadow-lg shadow-black/20 sticky top-0 z-30">
       <div className="flex items-center gap-2 sm:gap-3 lg:gap-6 min-w-0 flex-1">
         <Link
-          href={ROUTES.HOME}
+          href={Route.HOME}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0"
         >
           <div className="relative w-8 h-8 sm:w-10 sm:h-10 overflow-hidden rounded-lg border border-zinc-800/50 bg-white/5 flex items-center justify-center ring-1 ring-zinc-700/30">
@@ -139,9 +167,51 @@ export const StudioHeader = () => {
             />
           </button>
         )}
+        <div className="h-6 sm:h-8 w-px bg-zinc-800/50 mx-1 sm:mx-2" />
+
+        {/* Web3 Wallet Integration */}
+        <div className="flex items-center">
+          {ready && authenticated ? (
+            <div className="flex items-center gap-2 group">
+              <div className="hidden lg:flex flex-col items-end">
+                <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1 leading-none mb-1">
+                  <Network size={10} />
+                  POLKADOT HUB TESTNET
+                </span>
+                <span className="text-xs font-medium text-zinc-300 group-hover:text-zinc-100 transition-colors">
+                  {shortAddress}
+                </span>
+              </div>
+              <button
+                onClick={handleOpenWalletModal}
+                className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-700/50 hover:border-amber-500/50 rounded-lg transition-all shadow-sm ring-1 ring-zinc-700/20"
+                title="Wallet Details"
+              >
+                <div className="w-6 h-6 rounded-full bg-linear-to-br from-amber-400 to-amber-600 flex items-center justify-center text-black font-bold text-[10px]">
+                  {shortAddress.slice(0, 2).toUpperCase()}
+                </div>
+                <WalletIcon
+                  size={14}
+                  className="text-zinc-400 group-hover:text-amber-400 transition-colors"
+                />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => connectWallet()}
+              disabled={!ready}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-zinc-900 border border-amber-500/30 hover:border-amber-500 text-amber-400 hover:text-white rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              <WalletIcon size={14} className="group-hover:animate-bounce" />
+              <span className="hidden sm:inline">CONNECT WALLET</span>
+              <span className="sm:hidden">WALLET</span>
+            </button>
+          )}
+        </div>
+
         <div className="h-6 sm:h-8 w-px bg-zinc-800/50" />
         <button
-          onClick={() => router.push(ROUTES.STUDIO.PREVIEW)}
+          onClick={() => router.push(Route.STUDIO_PREVIEW)}
           className="px-2.5 sm:px-4 lg:px-5 py-1.5 sm:py-2 bg-linear-to-b from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black rounded-lg font-bold text-[10px] sm:text-xs lg:text-sm flex items-center gap-1 sm:gap-1.5 lg:gap-2 transition-all shadow-[0_3px_0_0_rgb(180,83,9)] hover:shadow-[0_3px_0_0_rgb(180,83,9)] active:shadow-[0_1px_0_0_rgb(180,83,9)] active:translate-y-0.5 hover:scale-105 touch-manipulation"
           style={{ fontFamily: 'var(--font-inter)' }}
         >
@@ -155,7 +225,7 @@ export const StudioHeader = () => {
           )}
         </button>
         <button
-          onClick={() => router.push(`${ROUTES.STUDIO.PREVIEW}?autoDownload=1`)}
+          onClick={() => router.push(`${Route.STUDIO_PREVIEW}?autoDownload=1`)}
           className="hidden sm:flex px-3 lg:px-4 py-1.5 bg-zinc-900 border border-zinc-700 text-zinc-100 rounded-lg text-xs lg:text-sm font-semibold items-center gap-1.5 hover:bg-zinc-800 hover:border-zinc-500 transition-all"
           style={{ fontFamily: 'var(--font-inter)' }}
         >

@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCancelGeneration, useGenerateSingle } from '@/features/generate';
 import { useUIStore } from '@/stores/ui.store';
 import { Download, RefreshCw, Wand2, X } from 'lucide-react';
+import Image from 'next/image';
 
 export function GenerationPanel() {
   const {
@@ -93,7 +94,20 @@ export function GenerationPanel() {
       setCurrentGeneration(null);
 
       generateSingle(
-        { prompt, config },
+        {
+          prompt,
+          config: {
+            style: config.style,
+            inking: 'G-Pen',
+            screentone: 'None',
+            layout: 'Single Panel',
+            aspectRatio:
+              config.aspectRatio === 'custom' ? '4:3' : config.aspectRatio,
+            useColor: config.colorScheme === 'color',
+            dialogueDensity: 'Medium Dialogue',
+            language: 'English',
+          },
+        },
         {
           onSuccess: (data) => {
             showSuccessNotification('Success', 'Panel generated successfully!');
@@ -154,10 +168,10 @@ export function GenerationPanel() {
               <label className="text-sm font-medium mb-2 block">Style</label>
               <Select
                 value={config.style}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   setConfig((prev) => ({
                     ...prev,
-                    style: value as typeof prev.style,
+                    style: value as any,
                   }))
                 }
                 disabled={isGenerating}
@@ -178,10 +192,10 @@ export function GenerationPanel() {
               <label className="text-sm font-medium mb-2 block">Genre</label>
               <Select
                 value={config.genre}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   setConfig((prev) => ({
                     ...prev,
-                    genre: value as typeof prev.genre,
+                    genre: value as any,
                   }))
                 }
                 disabled={isGenerating}

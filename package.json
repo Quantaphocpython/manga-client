@@ -63,6 +63,7 @@
     "motion": "^12.27.2",
     "next": "16.0.10",
     "next-themes": "^0.4.6",
+    "pino": "^10.3.1",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
@@ -72,7 +73,9 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
+    "thread-stream": "^4.0.0",
     "vaul": "^1.1.2",
+    "viem": "^2.45.3",
     "zod": "3.25.76",
     "zustand": "^5.0.10"
   },
@@ -97,5 +100,10 @@
   "engines": {
     "node": ">=18",
     "pnpm": ">=9"
+  },
+  "pnpm": {
+    "overrides": {
+      "pino": "10.3.1"
+    }
   }
 }

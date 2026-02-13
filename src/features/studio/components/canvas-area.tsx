@@ -1,6 +1,7 @@
 'use client';
 
 import { Maximize2, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 
 import { GenerationProgress } from '@/components/ui/generation-progress';
 
